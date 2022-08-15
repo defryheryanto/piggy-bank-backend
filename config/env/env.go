@@ -13,8 +13,14 @@ func init() {
 }
 
 const (
-	LISTEN_PORT    = "PORT"
-	LISTEN_ADDRESS = "ADDRESS"
+	LISTEN_PORT            = "PORT"
+	LISTEN_ADDRESS         = "ADDRESS"
+	PIGGY_BANK_DB_HOST     = "PIGGY_BANK_DB_HOST"
+	PIGGY_BANK_DB_PORT     = "PIGGY_BANK_DB_PORT"
+	PIGGY_BANK_DB_NAME     = "PIGGY_BANK_DB_NAME"
+	PIGGY_BANK_DB_USERNAME = "PIGGY_BANK_DB_USERNAME"
+	PIGGY_BANK_DB_PASSWORD = "PIGGY_BANK_DB_PASSWORD"
+	PIGGY_BANK_DB_SSL_MODE = "PIGGY_BANK_DB_SSL_MODE"
 )
 
 type env struct{}
@@ -25,6 +31,30 @@ func (e *env) ListenPort() string {
 
 func (e *env) ListenAddress() string {
 	return getStringOrDefault(LISTEN_ADDRESS, "localhost")
+}
+
+func (e *env) PiggyBankDBHost() string {
+	return getStringOrDefault(PIGGY_BANK_DB_HOST, "localhost")
+}
+
+func (e *env) PiggyBankDBPort() string {
+	return getStringOrDefault(PIGGY_BANK_DB_PORT, "5432")
+}
+
+func (e *env) PiggyBankDBName() string {
+	return getStringOrDefault(PIGGY_BANK_DB_NAME, "piggybank")
+}
+
+func (e *env) PiggyBankDBUsername() string {
+	return getStringOrDefault(PIGGY_BANK_DB_USERNAME, "piggybank")
+}
+
+func (e *env) PiggyBankDBPassword() string {
+	return getStringOrDefault(PIGGY_BANK_DB_PASSWORD, "piggybank")
+}
+
+func (e *env) PiggyBankDBSSLMode() string {
+	return getStringOrDefault(PIGGY_BANK_DB_SSL_MODE, "disable")
 }
 
 func getStringOrDefault(key, def string) string {
