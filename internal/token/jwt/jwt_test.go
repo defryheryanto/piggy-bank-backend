@@ -3,6 +3,7 @@ package jwt_test
 import (
 	"testing"
 
+	"github.com/defryheryanto/piggy-bank-backend/internal/token"
 	jwt_service "github.com/defryheryanto/piggy-bank-backend/internal/token/jwt"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -13,8 +14,9 @@ type payload struct {
 }
 
 func TestJWTTokenService(t *testing.T) {
+	var service token.TokenIService[*payload]
 	p := &payload{1, "Defry Heryanto"}
-	service := jwt_service.NewJWTTokenService[*payload](jwt.SigningMethodHS256, "secretkey", nil)
+	service = jwt_service.NewJWTTokenService[*payload](jwt.SigningMethodHS256, "secretkey", nil)
 
 	//check generate process
 	token, err := service.GenerateToken(p)
