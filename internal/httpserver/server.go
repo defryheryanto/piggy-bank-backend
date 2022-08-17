@@ -7,15 +7,18 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/defryheryanto/piggy-bank-backend/internal/app"
 )
 
 type ApplicationServer struct {
-	port    string
-	address string
+	port        string
+	address     string
+	application *app.Application
 }
 
-func NewApplicationServer(port, address string) *ApplicationServer {
-	return &ApplicationServer{port, address}
+func NewApplicationServer(port, address string, application *app.Application) *ApplicationServer {
+	return &ApplicationServer{port, address, application}
 }
 
 func (s *ApplicationServer) ServeApp() {

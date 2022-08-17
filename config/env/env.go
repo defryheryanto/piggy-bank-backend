@@ -21,6 +21,8 @@ const (
 	PIGGY_BANK_DB_USERNAME = "PIGGY_BANK_DB_USERNAME"
 	PIGGY_BANK_DB_PASSWORD = "PIGGY_BANK_DB_PASSWORD"
 	PIGGY_BANK_DB_SSL_MODE = "PIGGY_BANK_DB_SSL_MODE"
+	JWT_SECRET_KEY         = "JWT_SECRET_KEY"
+	AES_SECRET_KEY         = "AES_SECRET_KEY"
 )
 
 type env struct{}
@@ -55,6 +57,14 @@ func (e *env) PiggyBankDBPassword() string {
 
 func (e *env) PiggyBankDBSSLMode() string {
 	return getStringOrDefault(PIGGY_BANK_DB_SSL_MODE, "disable")
+}
+
+func (e *env) JWTSecretKey() string {
+	return getStringOrDefault(JWT_SECRET_KEY, "secret")
+}
+
+func (e *env) AESSecretKey() string {
+	return getStringOrDefault(AES_SECRET_KEY, "secret")
 }
 
 func getStringOrDefault(key, def string) string {

@@ -9,6 +9,8 @@ type config interface {
 	PiggyBankDBUsername() string
 	PiggyBankDBPassword() string
 	PiggyBankDBSSLMode() string
+	JWTSecretKey() string
+	AESSecretKey() string
 }
 
 var cfg config
@@ -47,4 +49,12 @@ func PiggyBankDBPassword() string {
 
 func PiggyBankDBSSLMode() string {
 	return cfg.PiggyBankDBSSLMode()
+}
+
+func JWTSecretKey() string {
+	return cfg.JWTSecretKey()
+}
+
+func AESSecretKey() string {
+	return cfg.AESSecretKey()
 }

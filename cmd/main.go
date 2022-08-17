@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	applicationServer := httpserver.NewApplicationServer(config.ListenPort(), config.ListenAddress())
+	application := buildApp()
+	applicationServer := httpserver.NewApplicationServer(config.ListenPort(), config.ListenAddress(), application)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
