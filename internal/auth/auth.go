@@ -15,6 +15,7 @@ func (u *User) TableName() string { return "users" }
 
 type UserRepository interface {
 	Create(*User) error
+	GetByUsername(username string) *User
 }
 
 type AuthSession struct {
@@ -52,4 +53,29 @@ func (s *AuthService) Register(payload *User) error {
 	}
 
 	return nil
+}
+
+func (s *AuthService) Login(username, password string) (string, error) {
+	currentUser := s.userStorage.GetByUsername(username)
+	if currentUser == nil {
+		return "", InvalidCredentialError
+	}
+	isMatch, err := s.encryptor.Check(password, currentUser.Password)
+	if err != nil {
+		return "", err
+	}
+	if !isMatch {
+		return "", InvalidCredentialError
+	}
+
+	session := &AuthSession{
+		UserID:   currentUser.UserID,
+		Username: currentUser.Username,
+	}
+	token, err := s.tokenService.GenerateToken(session)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

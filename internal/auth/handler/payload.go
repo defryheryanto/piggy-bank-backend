@@ -17,3 +17,19 @@ func (p *registerPayload) Validate() error {
 
 	return nil
 }
+
+type loginPayload struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (p *loginPayload) Validate() error {
+	if p.Username == "" {
+		return errors.NewBadRequestError("Please fill username", "username is empty")
+	}
+	if p.Password == "" {
+		return errors.NewBadRequestError("Please fill password", "password is empty")
+	}
+
+	return nil
+}

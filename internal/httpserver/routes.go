@@ -18,6 +18,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	})
 
 	r.HandleFunc("/api/v1/register", auth_handler.HandleRegister(s.application)).Methods(http.MethodPost)
+	r.HandleFunc("/api/v1/login", auth_handler.HandleLogin(s.application)).Methods(http.MethodPost)
 
 	return r
 }

@@ -21,3 +21,14 @@ func (s *UserStorage) Create(payload *auth.User) error {
 
 	return nil
 }
+
+func (s *UserStorage) GetByUsername(username string) *auth.User {
+	var data *auth.User
+
+	s.db.Find(&data)
+	if data.UserID == 0 {
+		return nil
+	}
+
+	return data
+}

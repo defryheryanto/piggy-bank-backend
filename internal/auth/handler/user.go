@@ -43,3 +43,35 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusInternalServerError, response.NewSuccessResponse())
 	}
 }
+
+func HandleLogin(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload *loginPayload
+
+		err := json.NewDecoder(r.Body).Decode(&payload)
+		if err != nil {
+			if err == io.EOF {
+				response.WithError(w, errors.NewHandledError(http.StatusBadRequest, "Please fill form", "payload body is empty"))
+				return
+			}
+			response.WithError(w, err)
+			return
+		}
+
+		err = payload.Validate()
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		token, err := a.AuthService.Login(payload.Username, payload.Password)
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		response.WithJSON(w, http.StatusOK, map[string]interface{}{
+			"token": token,
+		})
+	}
+}
