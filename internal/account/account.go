@@ -15,6 +15,8 @@ type Account struct {
 	AccountID     int       `gorm:"primaryKey;autoIncrement;column:account_id" json:"account_id"`
 	AccountName   string    `gorm:"column:account_name" json:"account_name"`
 	AccountTypeID int       `gorm:"column:account_type_id" json:"account_type_id"`
+	UserID        int       `gorm:"column:user_id"`
+	Balance       int64     `gorm:"column:balance"`
 	CreatedAt     time.Time `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt     time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
@@ -23,8 +25,14 @@ func (Account) TableName() string {
 	return "accounts"
 }
 
+type AccountSummary struct {
+	*AccountType
+	Accounts []*Account `json:"accounts"`
+}
+
 type AccountRepository interface {
 	GetTypes() []*AccountType
+	GetByUserIdAndType(userID, typeID int) []*Account
 }
 
 type AccountService struct {
@@ -37,4 +45,18 @@ func NewAccountService(accountRepository AccountRepository) *AccountService {
 
 func (s *AccountService) GetTypes() []*AccountType {
 	return s.accountStorage.GetTypes()
+}
+
+func (s *AccountService) GetAccountsByUser(userID int) []*AccountSummary {
+	types := s.accountStorage.GetTypes()
+	result := []*AccountSummary{}
+	for _, t := range types {
+		accounts := s.accountStorage.GetByUserIdAndType(userID, t.AccountTypeID)
+		result = append(result, &AccountSummary{
+			AccountType: t,
+			Accounts:    accounts,
+		})
+	}
+
+	return result
 }

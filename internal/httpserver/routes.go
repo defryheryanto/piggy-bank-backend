@@ -25,6 +25,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute := r.NewRoute().Subrouter()
 	privateRoute.Use(middleware.PrivateRoute(s.application))
 	privateRoute.HandleFunc("/api/v1/accounts/types", handler.HandleGetTypes(s.application)).Methods(http.MethodGet)
+	privateRoute.HandleFunc("/api/v1/accounts", handler.HandleGetAccounts(s.application)).Methods(http.MethodGet)
 
 	return r
 }

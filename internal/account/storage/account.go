@@ -18,3 +18,9 @@ func (s *AccountStorage) GetTypes() []*account.AccountType {
 	s.db.Find(&datas)
 	return datas
 }
+
+func (s *AccountStorage) GetByUserIdAndType(userID, typeID int) []*account.Account {
+	var datas []*account.Account
+	s.db.Where("user_id = ? AND account_type_id = ?", userID, typeID).Find(&datas)
+	return datas
+}

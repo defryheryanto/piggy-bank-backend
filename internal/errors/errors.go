@@ -9,3 +9,5 @@ func NewBadRequestError(message, detail string) HandledError {
 func NewUnauthorizedError(message, detail string) HandledError {
 	return NewHandledError(http.StatusUnauthorized, message, detail)
 }
+
+var InvalidSession = NewUnauthorizedError("Unauthorized", "invalid session")
