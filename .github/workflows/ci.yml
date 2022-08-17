@@ -1,0 +1,48 @@
+name: CI
+on:
+  push:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: piggybank
+          POSTGRES_PASSWORD: piggybank
+          POSTGRES_DB: piggybank
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps: 
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19' 
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Migrate Database
+        run: |
+          go run -v ./db/migrate.go
+        env:
+          PIGGY_BANK_TEST_DB_HOST: "localhost"
+          PIGGY_BANK_TEST_DB_PORT: 5432
+          PIGGY_BANK_TEST_DB_NAME: "piggybank"
+          PIGGY_BANK_TEST_DB_USERNAME: "piggybank"
+          PIGGY_BANK_TEST_DB_PASSWORD: "piggybank"
+          PIGGY_BANK_TEST_DB_SSL_MODE: "disable"
+      - name: Run Unit Tests
+        run: | 
+          go test -v ./...
+        env:
+          PIGGY_BANK_TEST_DB_HOST: "localhost"
+          PIGGY_BANK_TEST_DB_PORT: 5432
+          PIGGY_BANK_TEST_DB_NAME: "piggybank"
+          PIGGY_BANK_TEST_DB_USERNAME: "piggybank"
+          PIGGY_BANK_TEST_DB_PASSWORD: "piggybank"
+          PIGGY_BANK_TEST_DB_SSL_MODE: "disable"
+          JWT_SECRET_KEY: "this_is_secret_key"
+          AES_SECRET_KEY: "secret_need_to_be_32_characters!"
