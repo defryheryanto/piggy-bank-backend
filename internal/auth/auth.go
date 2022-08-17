@@ -38,6 +38,11 @@ func NewAuthService(
 }
 
 func (s *AuthService) Register(payload *User) error {
+	userByUsername := s.userStorage.GetByUsername(payload.Username)
+	if userByUsername != nil {
+		return UsernameHasTakenError
+	}
+
 	encryptedPassword, err := s.encryptor.Encrypt(payload.Password)
 	if err != nil {
 		return err

@@ -36,7 +36,7 @@ func TestRegister(t *testing.T) {
 	truncateAuthTables(t, db)
 	service := setupService(t, db)
 
-	t.Run("should insert user to db", func(t *testing.T) {
+	t.Run("insert user to db", func(t *testing.T) {
 		user := &auth.User{
 			Username: "TestUser",
 			Password: "123123",
@@ -52,4 +52,16 @@ func TestRegister(t *testing.T) {
 			t.Errorf("user not registered")
 		}
 	})
+
+	t.Run("return error if username is already taken", func(t *testing.T) {
+		user := &auth.User{
+			Username: "TestUser",
+			Password: "123123",
+		}
+		err := service.Register(user)
+		if err != auth.UsernameHasTakenError {
+			t.Errorf("should raise error if username is exists")
+		}
+	})
+	truncateAuthTables(t, db)
 }
