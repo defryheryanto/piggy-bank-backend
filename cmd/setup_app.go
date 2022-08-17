@@ -7,7 +7,9 @@ import (
 func buildApp() *app.Application {
 	piggyBankDatabase := setupDatabase()
 	authService := SetupAuthService(piggyBankDatabase)
+	accountService := setupAccountService(piggyBankDatabase)
 	return &app.Application{
-		AuthService: authService,
+		AuthService:    authService,
+		AccountService: accountService,
 	}
 }

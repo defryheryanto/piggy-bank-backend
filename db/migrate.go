@@ -59,10 +59,11 @@ func main() {
 
 	if *downFlag {
 		fmt.Println("Rollback migration..")
-		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+		if err := m.Steps(-1); err != nil && err != migrate.ErrNoChange {
 			log.Fatal(err)
 		}
-		fmt.Println("Rollback complete.")
+		version, _, _ := m.Version()
+		fmt.Printf("Rollback complete to version %d.\n", version)
 	} else {
 		fmt.Println("Migrating migration..")
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
