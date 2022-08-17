@@ -93,3 +93,12 @@ func (s *AuthService) Authenticate(token string) (bool, error) {
 
 	return isValid, nil
 }
+
+func (s *AuthService) GetCurrentUser(token string) (*AuthSession, error) {
+	currentUser, err := s.tokenService.Parse(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return currentUser, nil
+}

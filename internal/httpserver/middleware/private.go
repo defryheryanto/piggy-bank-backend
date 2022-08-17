@@ -1,10 +1,12 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/app"
+	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
 	"github.com/defryheryanto/piggy-bank-backend/internal/errors"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
 	"github.com/gorilla/mux"
@@ -32,7 +34,14 @@ func PrivateRoute(a *app.Application) mux.MiddlewareFunc {
 				return
 			}
 
-			next.ServeHTTP(w, r)
+			currentUser, err := a.AuthService.GetCurrentUser(token)
+			if err != nil {
+				response.WithError(w, errors.NewUnauthorizedError("Unauthorized", err.Error()))
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), auth.SessionKey, currentUser)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
