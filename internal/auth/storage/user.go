@@ -25,7 +25,7 @@ func (s *UserStorage) Create(payload *auth.User) error {
 func (s *UserStorage) GetByUsername(username string) *auth.User {
 	var data *auth.User
 
-	s.db.Find(&data)
+	s.db.Where("username = ?", username).Find(&data)
 	if data.UserID == 0 {
 		return nil
 	}
