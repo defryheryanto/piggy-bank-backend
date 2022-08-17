@@ -9,9 +9,9 @@ jobs:
       postgres:
         image: postgres:10.8
         env:
-          POSTGRES_USER: piggy_bank_test_admin
+          POSTGRES_USER: piggybank
           POSTGRES_PASSWORD: piggybank
-          POSTGRES_DB: piggy_bank_test
+          POSTGRES_DB: piggybank
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
