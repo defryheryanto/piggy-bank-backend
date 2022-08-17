@@ -84,3 +84,12 @@ func (s *AuthService) Login(username, password string) (string, error) {
 
 	return token, nil
 }
+
+func (s *AuthService) Authenticate(token string) (bool, error) {
+	isValid, err := s.tokenService.CheckValidity(token)
+	if err != nil {
+		return false, err
+	}
+
+	return isValid, nil
+}
