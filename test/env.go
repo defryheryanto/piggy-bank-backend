@@ -10,10 +10,7 @@ import (
 )
 
 func LoadEnv(t *testing.T, envPath string) {
-	err := godotenv.Load(envPath)
-	if err != nil {
-		t.Errorf("failed load env - %v", err)
-	}
+	godotenv.Load(envPath)
 }
 
 func GetEnvOrDefault(key, def string) string {
