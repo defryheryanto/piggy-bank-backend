@@ -17,15 +17,15 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&payload)
 		if err != nil {
 			if err == io.EOF {
-				response.WithJSON(w, http.StatusBadRequest, response.NewErrorResponse("Please fill form"))
+				response.WithJSON(w, http.StatusBadRequest, response.NewErrorResponse("Please fill form", "form is empty"))
 				return
 			}
-			response.WithJSON(w, http.StatusInternalServerError, response.NewErrorResponse(err.Error()))
+			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
 			return
 		}
 		err = payload.Validate()
 		if err != nil {
-			response.WithJSON(w, http.StatusInternalServerError, response.NewErrorResponse(err.Error()))
+			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
 			return
 		}
 
@@ -35,7 +35,7 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 		}
 		err = a.AuthService.Register(user)
 		if err != nil {
-			response.WithJSON(w, http.StatusInternalServerError, response.NewErrorResponse(err.Error()))
+			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
 			return
 		}
 
