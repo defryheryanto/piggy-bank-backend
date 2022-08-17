@@ -9,6 +9,7 @@ import (
 	jwt_service "github.com/defryheryanto/piggy-bank-backend/internal/token/jwt"
 	"github.com/defryheryanto/piggy-bank-backend/test"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
@@ -23,17 +24,9 @@ func setupService(t *testing.T, db *gorm.DB) *auth.AuthService {
 	return auth.NewAuthService(userStorage, tokenService, encryptor)
 }
 
-func truncateAuthTables(t *testing.T, db *gorm.DB) {
-	user := &auth.User{}
-	tables := []string{
-		user.TableName(),
-	}
-	test.TruncateTables(t, db, tables)
-}
-
 func TestRegister(t *testing.T) {
 	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
-	truncateAuthTables(t, db)
+	db = db.Begin()
 	service := setupService(t, db)
 
 	t.Run("insert user to db", func(t *testing.T) {
@@ -63,5 +56,44 @@ func TestRegister(t *testing.T) {
 			t.Errorf("should raise error if username is exists")
 		}
 	})
-	truncateAuthTables(t, db)
+	db.Rollback()
+}
+
+func TestLogin(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	db = db.Begin()
+	service := setupService(t, db)
+
+	user := &auth.User{
+		Username: "TestUser",
+		Password: "123123",
+	}
+	err := service.Register(user)
+	if err != nil {
+		t.Errorf("failed to register user %v", err)
+	}
+
+	t.Run("return token if valid", func(t *testing.T) {
+		token, err := service.Login(user.Username, user.Password)
+		assert.NoError(t, err)
+		if token == "" {
+			t.Errorf("token should not be empty")
+		}
+	})
+
+	t.Run("return error if user not found", func(t *testing.T) {
+		_, err := service.Login("not existed username", "this is wrong password")
+		if err != auth.InvalidCredentialError {
+			t.Errorf("should return invalid credential error")
+		}
+	})
+
+	t.Run("return error if credentials invalid", func(t *testing.T) {
+		_, err := service.Login(user.Username, "this is wrong password")
+		if err != auth.InvalidCredentialError {
+			t.Errorf("should return invalid credential error")
+		}
+	})
+
+	db.Rollback()
 }
