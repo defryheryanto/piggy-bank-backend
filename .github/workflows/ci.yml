@@ -30,8 +30,8 @@ jobs:
         env:
           PIGGY_BANK_TEST_DB_HOST: "localhost"
           PIGGY_BANK_TEST_DB_PORT: 5432
-          PIGGY_BANK_TEST_DB_NAME: "piggy_bank_test"
-          PIGGY_BANK_TEST_DB_USERNAME: "piggy_bank_test_admin"
+          PIGGY_BANK_TEST_DB_NAME: "piggybank"
+          PIGGY_BANK_TEST_DB_USERNAME: "piggybank"
           PIGGY_BANK_TEST_DB_PASSWORD: "piggybank"
           PIGGY_BANK_TEST_DB_SSL_MODE: "disable"
       - name: Run Unit Tests
@@ -40,8 +40,8 @@ jobs:
         env:
           PIGGY_BANK_TEST_DB_HOST: "localhost"
           PIGGY_BANK_TEST_DB_PORT: 5432
-          PIGGY_BANK_TEST_DB_NAME: "piggy_bank_test"
-          PIGGY_BANK_TEST_DB_USERNAME: "piggy_bank_test_admin"
+          PIGGY_BANK_TEST_DB_NAME: "piggybank"
+          PIGGY_BANK_TEST_DB_USERNAME: "piggybank"
           PIGGY_BANK_TEST_DB_PASSWORD: "piggybank"
           PIGGY_BANK_TEST_DB_SSL_MODE: "disable"
           JWT_SECRET_KEY: "this_is_secret_key"
