@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"io"
 )
@@ -39,7 +40,7 @@ func (e *AESEncryptor) Encrypt(text string) (string, error) {
 	textBytes := []byte(text)
 	encryptedBytes := gcm.Seal(nonce, nonce, textBytes, nil)
 
-	return string(encryptedBytes[:]), nil
+	return base64.URLEncoding.EncodeToString(encryptedBytes), nil
 }
 
 func (e *AESEncryptor) Check(realString, encryptedString string) (bool, error) {
@@ -53,7 +54,10 @@ func (e *AESEncryptor) Check(realString, encryptedString string) (bool, error) {
 		return false, err
 	}
 
-	encryptedBytes := []byte(encryptedString)
+	encryptedBytes, err := base64.URLEncoding.DecodeString(encryptedString)
+	if err != nil {
+		return false, err
+	}
 	nonceSize := gcm.NonceSize()
 	if len(encryptedBytes) < nonceSize {
 		return false, nil
