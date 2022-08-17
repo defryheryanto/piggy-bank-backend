@@ -7,6 +7,7 @@ import (
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/app"
 	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
+	"github.com/defryheryanto/piggy-bank-backend/internal/errors"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
 )
 
@@ -17,15 +18,15 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&payload)
 		if err != nil {
 			if err == io.EOF {
-				response.WithJSON(w, http.StatusBadRequest, response.NewErrorResponse("Please fill form", "form is empty"))
+				response.WithError(w, errors.NewHandledError(http.StatusBadRequest, "Please fill form", "payload body is empty"))
 				return
 			}
-			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
+			response.WithError(w, err)
 			return
 		}
 		err = payload.Validate()
 		if err != nil {
-			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
+			response.WithError(w, err)
 			return
 		}
 
@@ -35,7 +36,7 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 		}
 		err = a.AuthService.Register(user)
 		if err != nil {
-			response.WithJSON(w, http.StatusInternalServerError, response.NewDefaultErrorResponse(err.Error()))
+			response.WithError(w, err)
 			return
 		}
 

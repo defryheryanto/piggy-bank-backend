@@ -1,6 +1,6 @@
 package handler
 
-import "errors"
+import "github.com/defryheryanto/piggy-bank-backend/internal/errors"
 
 type registerPayload struct {
 	Username string `json:"username"`
@@ -9,10 +9,10 @@ type registerPayload struct {
 
 func (p *registerPayload) Validate() error {
 	if p.Username == "" {
-		return errors.New("please fill username")
+		return errors.NewBadRequestError("Please fill username", "username is empty")
 	}
 	if p.Password == "" {
-		return errors.New("please fill password")
+		return errors.NewBadRequestError("Please fill password", "password is empty")
 	}
 
 	return nil
