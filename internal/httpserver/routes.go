@@ -15,7 +15,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 
 	r.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		response.WithJSON(rw, 200, map[string]string{
-			"status": "healhty",
+			"status": "healthy",
 		})
 	})
 
