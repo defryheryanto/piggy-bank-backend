@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/defryheryanto/piggy-bank-backend/internal/account"
-	"github.com/defryheryanto/piggy-bank-backend/internal/account/storage"
+	storage "github.com/defryheryanto/piggy-bank-backend/internal/account/sql"
 	"gorm.io/gorm"
 )
 

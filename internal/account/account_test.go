@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/account"
-	"github.com/defryheryanto/piggy-bank-backend/internal/account/storage"
+	storage "github.com/defryheryanto/piggy-bank-backend/internal/account/sql"
 	"github.com/defryheryanto/piggy-bank-backend/test"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -197,7 +197,7 @@ func TestUpdateAccount(t *testing.T) {
 			}
 
 			err := service.UpdateAccount(payload)
-			assert.ErrorIs(t, err, account.ErrAccountTypeNotFound)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
 		})
 
 		t.Run("return error if account user id is different with payload", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestUpdateAccount(t *testing.T) {
 			}
 
 			err := service.UpdateAccount(payload)
-			assert.ErrorIs(t, err, account.ErrAccountTypeNotFound)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
 		})
 	})
 }

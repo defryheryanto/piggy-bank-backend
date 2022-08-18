@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/defryheryanto/piggy-bank-backend/config"
 	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
-	auth_storage "github.com/defryheryanto/piggy-bank-backend/internal/auth/storage"
+	auth_storage "github.com/defryheryanto/piggy-bank-backend/internal/auth/sql"
 	"github.com/defryheryanto/piggy-bank-backend/internal/encrypt/aes"
 	jwt_service "github.com/defryheryanto/piggy-bank-backend/internal/token/jwt"
 	"github.com/dgrijalva/jwt-go"

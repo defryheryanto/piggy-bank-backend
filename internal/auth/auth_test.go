@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
-	user_storage "github.com/defryheryanto/piggy-bank-backend/internal/auth/storage"
+	user_storage "github.com/defryheryanto/piggy-bank-backend/internal/auth/sql"
 	"github.com/defryheryanto/piggy-bank-backend/internal/encrypt/aes"
 	jwt_service "github.com/defryheryanto/piggy-bank-backend/internal/token/jwt"
 	"github.com/defryheryanto/piggy-bank-backend/test"
