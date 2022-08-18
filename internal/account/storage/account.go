@@ -42,3 +42,22 @@ func (s *AccountStorage) Create(payload *account.Account) error {
 
 	return nil
 }
+
+func (s *AccountStorage) Update(id int, payload *account.Account) error {
+	result := s.db.Where("account_id = ?", id).Updates(&payload)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (s *AccountStorage) GetByIdAndUser(accountId, userId int) *account.Account {
+	var data *account.Account
+	s.db.Where("account_id = ? AND user_id = ?", accountId, userId).First(&data)
+	if data.AccountID == 0 {
+		return nil
+	}
+
+	return data
+}

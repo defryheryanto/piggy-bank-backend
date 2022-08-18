@@ -15,6 +15,21 @@ func setupAccountService(db *gorm.DB) *account.AccountService {
 	return account.NewAccountService(accountStorage)
 }
 
+func populateAccountType(db *gorm.DB) {
+	types := []*account.AccountType{
+		{
+			AccountTypeName: "Account",
+		},
+		{
+			AccountTypeName: "Credit Card",
+		},
+		{
+			AccountTypeName: "Savings",
+		},
+	}
+	db.Create(&types)
+}
+
 func TestGetTypes(t *testing.T) {
 	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
 	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
@@ -129,6 +144,85 @@ func TestCreateAccount(t *testing.T) {
 			if insertedData.UpdatedAt.IsZero() {
 				t.Errorf("updated_at should not be nil")
 			}
+		})
+	})
+}
+
+func TestUpdateAccount(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		t.Run("should update data", func(t *testing.T) {
+			populateAccountType(db)
+
+			acc := &account.Account{
+				AccountID:     1,
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			}
+
+			db.Create(acc)
+
+			service := setupAccountService(db)
+
+			payload := &account.UpdateAccountPayload{
+				AccountID:     1,
+				AccountName:   "Mandiri",
+				AccountTypeID: 2,
+				UserID:        1,
+			}
+
+			err := service.UpdateAccount(payload)
+			assert.NoError(t, err)
+
+			var inserted *account.Account
+			db.Where("account_id = ?", acc.AccountID).First(&inserted)
+
+			if inserted.AccountName != payload.AccountName {
+				t.Errorf("account_name not updated")
+			}
+			if inserted.AccountTypeID != payload.AccountTypeID {
+				t.Errorf("account_type_id not updated")
+			}
+		})
+
+		t.Run("return error if account not found", func(t *testing.T) {
+			service := setupAccountService(db)
+
+			payload := &account.UpdateAccountPayload{
+				AccountID:     99,
+				AccountName:   "Mandiri",
+				AccountTypeID: 2,
+				UserID:        1,
+			}
+
+			err := service.UpdateAccount(payload)
+			assert.ErrorIs(t, err, account.ErrAccountTypeNotFound)
+		})
+
+		t.Run("return error if account user id is different with payload", func(t *testing.T) {
+			populateAccountType(db)
+
+			acc := &account.Account{
+				AccountID:     1,
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			}
+
+			db.Create(acc)
+
+			service := setupAccountService(db)
+
+			payload := &account.UpdateAccountPayload{
+				AccountID:     1,
+				AccountName:   "Mandiri",
+				AccountTypeID: 2,
+				UserID:        2,
+			}
+
+			err := service.UpdateAccount(payload)
+			assert.ErrorIs(t, err, account.ErrAccountTypeNotFound)
 		})
 	})
 }

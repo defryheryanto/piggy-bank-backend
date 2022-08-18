@@ -30,11 +30,20 @@ type AccountSummary struct {
 	Accounts []*Account `json:"accounts"`
 }
 
+type UpdateAccountPayload struct {
+	AccountID     int    `json:"account_id"`
+	AccountName   string `json:"account_name"`
+	AccountTypeID int    `json:"account_type_id"`
+	UserID        int    `json:"user_id"`
+}
+
 type AccountRepository interface {
 	GetTypes() []*AccountType
 	GetTypeById(int) *AccountType
 	GetByUserIdAndType(userID, typeID int) []*Account
 	Create(*Account) error
+	Update(id int, payload *Account) error
+	GetByIdAndUser(accountId, userId int) *Account
 }
 
 type AccountService struct {
@@ -70,6 +79,32 @@ func (s *AccountService) CreateAccount(payload *Account) error {
 	}
 
 	err := s.accountStorage.Create(payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AccountService) UpdateAccount(payload *UpdateAccountPayload) error {
+	if payload == nil || payload.AccountID == 0 {
+		return ErrAccountTypeNotFound
+	}
+
+	currentAccount := s.accountStorage.GetByIdAndUser(payload.UserID, payload.AccountID)
+	if currentAccount == nil {
+		return ErrAccountTypeNotFound
+	}
+
+	if payload.AccountName != "" {
+		currentAccount.AccountName = payload.AccountName
+	}
+	if payload.AccountTypeID != 0 {
+		currentAccount.AccountTypeID = payload.AccountTypeID
+	}
+	currentAccount.UpdatedAt = time.Now()
+
+	err := s.accountStorage.Update(payload.AccountID, currentAccount)
 	if err != nil {
 		return err
 	}
