@@ -32,7 +32,9 @@ type AccountSummary struct {
 
 type AccountRepository interface {
 	GetTypes() []*AccountType
+	GetTypeById(int) *AccountType
 	GetByUserIdAndType(userID, typeID int) []*Account
+	Create(*Account) error
 }
 
 type AccountService struct {
@@ -59,4 +61,18 @@ func (s *AccountService) GetAccountsByUser(userID int) []*AccountSummary {
 	}
 
 	return result
+}
+
+func (s *AccountService) CreateAccount(payload *Account) error {
+	accType := s.accountStorage.GetTypeById(payload.AccountTypeID)
+	if accType == nil {
+		return ErrAccountTypeNotFound
+	}
+
+	err := s.accountStorage.Create(payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

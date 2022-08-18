@@ -19,8 +19,26 @@ func (s *AccountStorage) GetTypes() []*account.AccountType {
 	return datas
 }
 
+func (s *AccountStorage) GetTypeById(typeId int) *account.AccountType {
+	var data *account.AccountType
+	s.db.Where("account_type_id = ?", typeId).First(&data)
+	if data.AccountTypeID == 0 {
+		return nil
+	}
+	return data
+}
+
 func (s *AccountStorage) GetByUserIdAndType(userID, typeID int) []*account.Account {
 	var datas []*account.Account
 	s.db.Where("user_id = ? AND account_type_id = ?", userID, typeID).Find(&datas)
 	return datas
+}
+
+func (s *AccountStorage) Create(payload *account.Account) error {
+	result := s.db.Create(payload)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

@@ -10,4 +10,9 @@ func NewUnauthorizedError(message, detail string) HandledError {
 	return NewHandledError(http.StatusUnauthorized, message, detail)
 }
 
+func NewNotFoundError(message, detail string) HandledError {
+	return NewHandledError(http.StatusNotFound, message, detail)
+}
+
 var InvalidSession = NewUnauthorizedError("Unauthorized", "invalid session")
+var EmptyPayload = NewBadRequestError("Please fill data", "request body is empty")
