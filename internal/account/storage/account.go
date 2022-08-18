@@ -61,3 +61,12 @@ func (s *AccountStorage) GetByIdAndUser(accountId, userId int) *account.Account 
 
 	return data
 }
+
+func (s *AccountStorage) DeleteById(accountId int) error {
+	result := s.db.Model(&account.Account{}).Delete("account_id = ?", accountId)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}

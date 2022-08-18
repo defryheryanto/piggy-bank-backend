@@ -226,3 +226,40 @@ func TestUpdateAccount(t *testing.T) {
 		})
 	})
 }
+
+func TestDeleteAccount(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupAccountService(db)
+		t.Run("should delete the data", func(t *testing.T) {
+			acc := &account.Account{
+				AccountID:     1,
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			}
+			db.Create(&acc)
+
+			err := service.DeleteById(acc.AccountID, acc.UserID)
+			assert.NoError(t, err)
+		})
+
+		t.Run("return error if account not found", func(t *testing.T) {
+			err := service.DeleteById(99, 1)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+		})
+
+		t.Run("return error if user id is not match", func(t *testing.T) {
+			acc := &account.Account{
+				AccountID:     1,
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			}
+			db.Create(&acc)
+
+			err := service.DeleteById(acc.AccountID, 2)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+		})
+	})
+}

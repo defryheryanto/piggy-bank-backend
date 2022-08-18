@@ -27,6 +27,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute.HandleFunc("/api/v1/accounts", handler.HandleGetAccounts(s.application)).Methods(http.MethodGet)
 	privateRoute.HandleFunc("/api/v1/accounts", handler.HandleCreateAccount(s.application)).Methods(http.MethodPost)
 	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", handler.HandleUpdateAccount(s.application)).Methods(http.MethodPatch)
+	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", handler.HandleDeleteAccount(s.application)).Methods(http.MethodDelete)
 	privateRoute.HandleFunc("/api/v1/accounts/types", handler.HandleGetTypes(s.application)).Methods(http.MethodGet)
 
 	return r

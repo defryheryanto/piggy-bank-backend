@@ -44,6 +44,7 @@ type AccountRepository interface {
 	Create(*Account) error
 	Update(id int, payload *Account) error
 	GetByIdAndUser(accountId, userId int) *Account
+	DeleteById(accountId int) error
 }
 
 type AccountService struct {
@@ -88,12 +89,12 @@ func (s *AccountService) CreateAccount(payload *Account) error {
 
 func (s *AccountService) UpdateAccount(payload *UpdateAccountPayload) error {
 	if payload == nil || payload.AccountID == 0 {
-		return ErrAccountTypeNotFound
+		return ErrAccountNotFound
 	}
 
 	currentAccount := s.accountStorage.GetByIdAndUser(payload.UserID, payload.AccountID)
 	if currentAccount == nil {
-		return ErrAccountTypeNotFound
+		return ErrAccountNotFound
 	}
 
 	if payload.AccountName != "" {
@@ -105,6 +106,20 @@ func (s *AccountService) UpdateAccount(payload *UpdateAccountPayload) error {
 	currentAccount.UpdatedAt = time.Now()
 
 	err := s.accountStorage.Update(payload.AccountID, currentAccount)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AccountService) DeleteById(accountId int, userId int) error {
+	current := s.accountStorage.GetByIdAndUser(accountId, userId)
+	if current == nil {
+		return ErrAccountNotFound
+	}
+
+	err := s.accountStorage.DeleteById(accountId)
 	if err != nil {
 		return err
 	}

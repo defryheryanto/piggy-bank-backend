@@ -111,3 +111,28 @@ func HandleUpdateAccount(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleDeleteAccount(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		accountIdStr := mux.Vars(r)["account_id"]
+		accountId, err := strconv.Atoi(accountIdStr)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Account ID should be numeric", "account_id should be numeric"))
+			return
+		}
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.InvalidSession)
+			return
+		}
+
+		err = a.AccountService.DeleteById(accountId, session.UserID)
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
+	}
+}
