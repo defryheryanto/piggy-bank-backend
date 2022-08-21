@@ -54,3 +54,17 @@ func HandleCreateCategory(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleGetCategoryTypes(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.ErrInvalidSession)
+			return
+		}
+
+		result := a.CategoryService.GetCategoryTypeDetails(session.UserID)
+
+		response.WithJSON(w, http.StatusOK, result)
+	}
+}

@@ -1,12 +1,21 @@
 package category
 
-import "golang.org/x/exp/slices"
+import (
+	"golang.org/x/exp/slices"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
 
 type CategoryType string
 
+func (ct *CategoryType) DisplayName() string {
+	caser := cases.Title(language.English)
+	return caser.String(string(*ct))
+}
+
 const (
 	IncomeCategory  CategoryType = "income"
-	ExpenseCategory CategoryType = "Expense"
+	ExpenseCategory CategoryType = "expense"
 )
 
 var CategoryTypes = []CategoryType{
@@ -26,8 +35,15 @@ func (Category) TableName() string {
 	return "categories"
 }
 
+type CategoryTypeDetail struct {
+	CategoryType        CategoryType `json:"category_type"`
+	CategoryTypeDisplay string       `json:"category_type_display"`
+	Categories          []*Category  `json:"categories"`
+}
+
 type CategoryRepository interface {
 	Create(*Category) error
+	GetByTypeAndUserId(categoryType CategoryType, userId int) []*Category
 }
 
 type CategoryService struct {
@@ -50,6 +66,20 @@ func (s *CategoryService) Create(payload *Category) error {
 	}
 
 	return nil
+}
+
+func (s *CategoryService) GetCategoryTypeDetails(userId int) []*CategoryTypeDetail {
+	result := []*CategoryTypeDetail{}
+	for _, categoryType := range CategoryTypes {
+		categories := s.repository.GetByTypeAndUserId(categoryType, userId)
+		result = append(result, &CategoryTypeDetail{
+			CategoryType:        categoryType,
+			CategoryTypeDisplay: categoryType.DisplayName(),
+			Categories:          categories,
+		})
+	}
+
+	return result
 }
 
 func ValidateCategoryType(categoryType CategoryType) error {

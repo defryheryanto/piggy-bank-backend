@@ -56,3 +56,48 @@ func TestCreate(t *testing.T) {
 		})
 	})
 }
+
+func TestGetTypeDetails(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		payload := []*category.Category{
+			{
+				CategoryName: "Salary",
+				UserId:       1,
+				CategoryType: category.IncomeCategory,
+				Budget:       1000000,
+			},
+			{
+				CategoryName: "Food",
+				UserId:       1,
+				CategoryType: category.ExpenseCategory,
+				Budget:       1000000,
+			},
+			{
+				CategoryName: "Food",
+				UserId:       2,
+				CategoryType: category.ExpenseCategory,
+			},
+		}
+
+		db.Create(&payload)
+
+		t.Run("should get by available type", func(t *testing.T) {
+			result := service.GetCategoryTypeDetails(1)
+			assert.Equal(t, len(category.CategoryTypes), len(result))
+		})
+
+		t.Run("should get categories", func(t *testing.T) {
+			result := service.GetCategoryTypeDetails(1)
+
+			//check income categories
+			assert.Equal(t, 1, len(result[0].Categories))
+
+			//check expense categories
+			assert.Equal(t, 1, len(result[1].Categories))
+		})
+	})
+}

@@ -21,3 +21,10 @@ func (s *CategoryStorage) Create(payload *category.Category) error {
 
 	return nil
 }
+
+func (s *CategoryStorage) GetByTypeAndUserId(categoryType category.CategoryType, userId int) []*category.Category {
+	var datas []*category.Category
+	s.db.Where("category_type = ? AND user_id = ?", categoryType, userId).Find(&datas)
+
+	return datas
+}

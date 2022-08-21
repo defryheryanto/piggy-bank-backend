@@ -32,6 +32,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute.HandleFunc("/api/v1/accounts/types", account_handler.HandleGetTypes(s.application)).Methods(http.MethodGet)
 
 	privateRoute.HandleFunc("/api/v1/categories", category_handler.HandleCreateCategory(s.application)).Methods(http.MethodPost)
+	privateRoute.HandleFunc("/api/v1/categories", category_handler.HandleGetCategoryTypes(s.application)).Methods(http.MethodGet)
 
 	return r
 }
