@@ -40,7 +40,7 @@ func NewAuthService(
 func (s *AuthService) Register(payload *User) error {
 	userByUsername := s.userStorage.GetByUsername(payload.Username)
 	if userByUsername != nil {
-		return UsernameHasTakenError
+		return ErrUsernameHasTaken
 	}
 
 	encryptedPassword, err := s.encryptor.Encrypt(payload.Password)
@@ -63,14 +63,14 @@ func (s *AuthService) Register(payload *User) error {
 func (s *AuthService) Login(username, password string) (string, error) {
 	currentUser := s.userStorage.GetByUsername(username)
 	if currentUser == nil {
-		return "", InvalidCredentialError
+		return "", ErrInvalidCredential
 	}
 	isMatch, err := s.encryptor.Check(password, currentUser.Password)
 	if err != nil {
 		return "", err
 	}
 	if !isMatch {
-		return "", InvalidCredentialError
+		return "", ErrInvalidCredential
 	}
 
 	session := &AuthSession{

@@ -25,7 +25,7 @@ func HandleGetAccounts(a *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session := auth.FromContext(r.Context())
 		if session == nil {
-			response.WithError(w, errors.InvalidSession)
+			response.WithError(w, errors.ErrInvalidSession)
 			return
 		}
 
@@ -38,7 +38,7 @@ func HandleCreateAccount(a *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session := auth.FromContext(r.Context())
 		if session == nil {
-			response.WithError(w, errors.InvalidSession)
+			response.WithError(w, errors.ErrInvalidSession)
 			return
 		}
 
@@ -46,7 +46,7 @@ func HandleCreateAccount(a *app.Application) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&payload)
 		if err != nil {
 			if err == io.EOF {
-				response.WithError(w, errors.EmptyPayload)
+				response.WithError(w, errors.ErrEmptyPayload)
 				return
 			}
 			response.WithError(w, errors.ErrUnprocessablePayload)
@@ -87,7 +87,7 @@ func HandleUpdateAccount(a *app.Application) http.HandlerFunc {
 		err = json.NewDecoder(r.Body).Decode(&p)
 		if err != nil {
 			if err == io.EOF {
-				response.WithError(w, errors.EmptyPayload)
+				response.WithError(w, errors.ErrEmptyPayload)
 				return
 			}
 			response.WithError(w, errors.ErrUnprocessablePayload)
@@ -96,7 +96,7 @@ func HandleUpdateAccount(a *app.Application) http.HandlerFunc {
 
 		session := auth.FromContext(r.Context())
 		if session == nil {
-			response.WithError(w, errors.InvalidSession)
+			response.WithError(w, errors.ErrInvalidSession)
 			return
 		}
 		p.UserID = session.UserID
@@ -123,7 +123,7 @@ func HandleDeleteAccount(a *app.Application) http.HandlerFunc {
 
 		session := auth.FromContext(r.Context())
 		if session == nil {
-			response.WithError(w, errors.InvalidSession)
+			response.WithError(w, errors.ErrInvalidSession)
 			return
 		}
 

@@ -19,7 +19,7 @@ func HandleCreateCategory(a *app.Application) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&p)
 		if err != nil {
 			if err == io.EOF {
-				response.WithError(w, errors.EmptyPayload)
+				response.WithError(w, errors.ErrEmptyPayload)
 				return
 			}
 			response.WithError(w, errors.ErrUnprocessablePayload)
@@ -34,7 +34,7 @@ func HandleCreateCategory(a *app.Application) http.HandlerFunc {
 
 		session := auth.FromContext(r.Context())
 		if session == nil {
-			response.WithError(w, errors.InvalidSession)
+			response.WithError(w, errors.ErrInvalidSession)
 			return
 		}
 

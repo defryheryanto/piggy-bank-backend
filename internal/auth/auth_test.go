@@ -52,7 +52,7 @@ func TestRegister(t *testing.T) {
 				Password: "123123",
 			}
 			err := service.Register(user)
-			if err != auth.UsernameHasTakenError {
+			if err != auth.ErrUsernameHasTaken {
 				t.Errorf("should raise error if username is exists")
 			}
 		})
@@ -83,14 +83,14 @@ func TestLogin(t *testing.T) {
 
 		t.Run("return error if user not found", func(t *testing.T) {
 			_, err := service.Login("not existed username", "this is wrong password")
-			if err != auth.InvalidCredentialError {
+			if err != auth.ErrInvalidCredential {
 				t.Errorf("should return invalid credential error")
 			}
 		})
 
 		t.Run("return error if credentials invalid", func(t *testing.T) {
 			_, err := service.Login(user.Username, "this is wrong password")
-			if err != auth.InvalidCredentialError {
+			if err != auth.ErrInvalidCredential {
 				t.Errorf("should return invalid credential error")
 			}
 		})
