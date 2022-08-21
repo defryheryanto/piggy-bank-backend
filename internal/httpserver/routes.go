@@ -3,8 +3,9 @@ package httpserver
 import (
 	"net/http"
 
-	"github.com/defryheryanto/piggy-bank-backend/internal/account/handler"
+	account_handler "github.com/defryheryanto/piggy-bank-backend/internal/account/handler"
 	auth_handler "github.com/defryheryanto/piggy-bank-backend/internal/auth/handler"
+	category_handler "github.com/defryheryanto/piggy-bank-backend/internal/category/handler"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/middleware"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
 	"github.com/gorilla/mux"
@@ -24,11 +25,13 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 
 	privateRoute := r.NewRoute().Subrouter()
 	privateRoute.Use(middleware.PrivateRoute(s.application))
-	privateRoute.HandleFunc("/api/v1/accounts", handler.HandleGetAccounts(s.application)).Methods(http.MethodGet)
-	privateRoute.HandleFunc("/api/v1/accounts", handler.HandleCreateAccount(s.application)).Methods(http.MethodPost)
-	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", handler.HandleUpdateAccount(s.application)).Methods(http.MethodPatch)
-	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", handler.HandleDeleteAccount(s.application)).Methods(http.MethodDelete)
-	privateRoute.HandleFunc("/api/v1/accounts/types", handler.HandleGetTypes(s.application)).Methods(http.MethodGet)
+	privateRoute.HandleFunc("/api/v1/accounts", account_handler.HandleGetAccounts(s.application)).Methods(http.MethodGet)
+	privateRoute.HandleFunc("/api/v1/accounts", account_handler.HandleCreateAccount(s.application)).Methods(http.MethodPost)
+	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", account_handler.HandleUpdateAccount(s.application)).Methods(http.MethodPatch)
+	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", account_handler.HandleDeleteAccount(s.application)).Methods(http.MethodDelete)
+	privateRoute.HandleFunc("/api/v1/accounts/types", account_handler.HandleGetTypes(s.application)).Methods(http.MethodGet)
+
+	privateRoute.HandleFunc("/api/v1/categories", category_handler.HandleCreateCategory(s.application)).Methods(http.MethodPost)
 
 	return r
 }
