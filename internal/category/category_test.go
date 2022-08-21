@@ -43,5 +43,16 @@ func TestCreate(t *testing.T) {
 			assert.Equal(t, payload.UserId, data.UserId)
 			assert.Equal(t, int64(0), data.Budget)
 		})
+
+		t.Run("return error if type is invalid", func(t *testing.T) {
+			payload := &category.Category{
+				CategoryName: "Food",
+				UserId:       1,
+				CategoryType: "pemasukan",
+			}
+
+			err := service.Create(payload)
+			assert.ErrorIs(t, err, category.ErrInvalidCategoryType)
+		})
 	})
 }
