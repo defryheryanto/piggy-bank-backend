@@ -28,3 +28,14 @@ func (s *CategoryStorage) GetByTypeAndUserId(categoryType category.CategoryType,
 
 	return datas
 }
+
+func (s *CategoryStorage) GetById(categoryId int) *category.Category {
+	var data *category.Category
+
+	s.db.Where("category_id = ?", categoryId).Find(&data)
+	if data.CategoryId == 0 {
+		return nil
+	}
+
+	return data
+}

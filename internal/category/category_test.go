@@ -101,3 +101,33 @@ func TestGetTypeDetails(t *testing.T) {
 		})
 	})
 }
+
+func TestGetCategoryById(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		payload := &category.Category{
+			CategoryId:   1,
+			CategoryName: "Food",
+			UserId:       1,
+			CategoryType: category.ExpenseCategory,
+		}
+
+		db.Create(&payload)
+
+		t.Run("should return category", func(t *testing.T) {
+			cat, err := service.GetCategoryById(payload.CategoryId)
+			assert.NoError(t, err)
+			assert.NotNil(t, cat)
+			assert.Equal(t, payload.CategoryId, cat.CategoryId)
+		})
+
+		t.Run("return error if category not found", func(t *testing.T) {
+			cat, err := service.GetCategoryById(99)
+			assert.ErrorIs(t, err, category.ErrCategoryNotFound)
+			assert.Nil(t, cat)
+		})
+	})
+}

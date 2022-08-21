@@ -44,6 +44,7 @@ type CategoryTypeDetail struct {
 type CategoryRepository interface {
 	Create(*Category) error
 	GetByTypeAndUserId(categoryType CategoryType, userId int) []*Category
+	GetById(categoryId int) *Category
 }
 
 type CategoryService struct {
@@ -80,6 +81,15 @@ func (s *CategoryService) GetCategoryTypeDetails(userId int) []*CategoryTypeDeta
 	}
 
 	return result
+}
+
+func (s *CategoryService) GetCategoryById(categoryId int) (*Category, error) {
+	cat := s.repository.GetById(categoryId)
+	if cat == nil {
+		return nil, ErrCategoryNotFound
+	}
+
+	return cat, nil
 }
 
 func ValidateCategoryType(categoryType CategoryType) error {

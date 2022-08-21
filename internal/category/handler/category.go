@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/app"
 	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
 	"github.com/defryheryanto/piggy-bank-backend/internal/category"
 	"github.com/defryheryanto/piggy-bank-backend/internal/errors"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
+	"github.com/gorilla/mux"
 )
 
 func HandleCreateCategory(a *app.Application) http.HandlerFunc {
@@ -66,5 +68,24 @@ func HandleGetCategoryTypes(a *app.Application) http.HandlerFunc {
 		result := a.CategoryService.GetCategoryTypeDetails(session.UserID)
 
 		response.WithJSON(w, http.StatusOK, result)
+	}
+}
+
+func HandleGetCategory(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sCategoryId := mux.Vars(r)["category_id"]
+		categoryId, err := strconv.Atoi(sCategoryId)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Category ID must be an number", "category_id is not a number"))
+			return
+		}
+
+		category, err := a.CategoryService.GetCategoryById(categoryId)
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		response.WithJSON(w, http.StatusOK, category)
 	}
 }
