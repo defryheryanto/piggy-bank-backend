@@ -21,7 +21,7 @@ func HandleRegister(a *app.Application) http.HandlerFunc {
 				response.WithError(w, errors.NewHandledError(http.StatusBadRequest, "Please fill form", "payload body is empty"))
 				return
 			}
-			response.WithError(w, err)
+			response.WithError(w, errors.ErrUnprocessablePayload)
 			return
 		}
 		err = payload.Validate()
@@ -54,7 +54,7 @@ func HandleLogin(a *app.Application) http.HandlerFunc {
 				response.WithError(w, errors.NewHandledError(http.StatusBadRequest, "Please fill form", "payload body is empty"))
 				return
 			}
-			response.WithError(w, err)
+			response.WithError(w, errors.ErrUnprocessablePayload)
 			return
 		}
 

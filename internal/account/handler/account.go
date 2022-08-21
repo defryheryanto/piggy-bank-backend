@@ -49,7 +49,7 @@ func HandleCreateAccount(a *app.Application) http.HandlerFunc {
 				response.WithError(w, errors.EmptyPayload)
 				return
 			}
-			response.WithError(w, err)
+			response.WithError(w, errors.ErrUnprocessablePayload)
 			return
 		}
 		err = payload.Validate()
@@ -90,7 +90,7 @@ func HandleUpdateAccount(a *app.Application) http.HandlerFunc {
 				response.WithError(w, errors.EmptyPayload)
 				return
 			}
-			response.WithError(w, err)
+			response.WithError(w, errors.ErrUnprocessablePayload)
 			return
 		}
 

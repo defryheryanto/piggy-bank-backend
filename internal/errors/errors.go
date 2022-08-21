@@ -14,5 +14,10 @@ func NewNotFoundError(message, detail string) HandledError {
 	return NewHandledError(http.StatusNotFound, message, detail)
 }
 
+func NewUnprocessableEntity(message, detail string) HandledError {
+	return NewHandledError(http.StatusUnprocessableEntity, message, detail)
+}
+
 var InvalidSession = NewUnauthorizedError("Unauthorized", "invalid session")
 var EmptyPayload = NewBadRequestError("Please fill data", "request body is empty")
+var ErrUnprocessablePayload = NewUnprocessableEntity("Data submitted invalid", "payload is unprocessable")
