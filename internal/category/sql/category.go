@@ -39,3 +39,12 @@ func (s *CategoryStorage) GetById(categoryId int) *category.Category {
 
 	return data
 }
+
+func (s *CategoryStorage) UpdateById(categoryId int, payload *category.Category) error {
+	res := s.db.Where("category_id = ?", categoryId).Updates(&payload)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}

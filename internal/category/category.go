@@ -1,6 +1,7 @@
 package category
 
 import (
+	"github.com/defryheryanto/piggy-bank-backend/internal/errors"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -41,10 +42,33 @@ type CategoryTypeDetail struct {
 	Categories          []*Category  `json:"categories"`
 }
 
+type UpdateCategoryPayload struct {
+	CategoryId   int          `json:"category_id"`
+	CategoryName string       `json:"category_name"`
+	CategoryType CategoryType `json:"category_type"`
+	Budget       *int64       `json:"budget"`
+	UserId       int64        `json:"user_id"`
+}
+
+func (p *UpdateCategoryPayload) Validate() error {
+	if p.CategoryId == 0 {
+		return errors.NewBadRequestError("Please fill Category ID", "category_id is required")
+	}
+	if p.CategoryName == "" {
+		return errors.NewBadRequestError("Please fill Category Name", "category_name is required")
+	}
+	if p.CategoryType == "" {
+		return errors.NewBadRequestError("Please fill Category Type", "category_type is required")
+	}
+
+	return nil
+}
+
 type CategoryRepository interface {
 	Create(*Category) error
 	GetByTypeAndUserId(categoryType CategoryType, userId int) []*Category
 	GetById(categoryId int) *Category
+	UpdateById(categoryId int, payload *Category) error
 }
 
 type CategoryService struct {
@@ -90,6 +114,38 @@ func (s *CategoryService) GetCategoryById(categoryId int) (*Category, error) {
 	}
 
 	return cat, nil
+}
+
+func (s *CategoryService) UpdateCategory(payload *UpdateCategoryPayload) error {
+	if payload.CategoryId == 0 {
+		return ErrCategoryNotFound
+	}
+
+	existing := s.repository.GetById(payload.CategoryId)
+	if existing == nil || existing.UserId != int(payload.UserId) {
+		return ErrCategoryNotFound
+	}
+
+	if payload.CategoryName != "" {
+		existing.CategoryName = payload.CategoryName
+	}
+	if payload.CategoryType != "" {
+		err := ValidateCategoryType(payload.CategoryType)
+		if err != nil {
+			return err
+		}
+		existing.CategoryType = payload.CategoryType
+	}
+	if payload.Budget != nil {
+		existing.Budget = *payload.Budget
+	}
+
+	err := s.repository.UpdateById(existing.CategoryId, existing)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ValidateCategoryType(categoryType CategoryType) error {

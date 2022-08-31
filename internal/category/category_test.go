@@ -131,3 +131,80 @@ func TestGetCategoryById(t *testing.T) {
 		})
 	})
 }
+
+func TestUpdateCategory(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		payload := &category.Category{
+			CategoryId:   1,
+			CategoryName: "Food",
+			UserId:       1,
+			CategoryType: category.ExpenseCategory,
+		}
+
+		db.Create(&payload)
+
+		t.Run("should update category", func(t *testing.T) {
+			budget := int64(10000)
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   payload.CategoryId,
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				Budget:       &budget,
+				UserId:       int64(payload.UserId),
+			}
+
+			err := service.UpdateCategory(p)
+			assert.NoError(t, err)
+
+			var updated *category.Category
+			db.Where("category_id = ?", p.CategoryId).First(&updated)
+			assert.NotNil(t, updated)
+			assert.Equal(t, p.CategoryName, updated.CategoryName)
+			assert.Equal(t, p.CategoryType, updated.CategoryType)
+			assert.Equal(t, *p.Budget, updated.Budget)
+			assert.Equal(t, p.UserId, int64(updated.UserId))
+		})
+
+		t.Run("return error if category not found", func(t *testing.T) {
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   99,
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				UserId:       int64(payload.UserId),
+			}
+
+			err := service.UpdateCategory(p)
+			assert.ErrorIs(t, category.ErrCategoryNotFound, err)
+		})
+
+		t.Run("return error if user id not match with existing useri id", func(t *testing.T) {
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   payload.CategoryId,
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				UserId:       99,
+			}
+
+			err := service.UpdateCategory(p)
+			assert.ErrorIs(t, category.ErrCategoryNotFound, err)
+		})
+
+		t.Run("return error if category type is invalid", func(t *testing.T) {
+			budget := int64(10000)
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   payload.CategoryId,
+				CategoryName: "Salary",
+				CategoryType: "ini category",
+				Budget:       &budget,
+				UserId:       int64(payload.UserId),
+			}
+
+			err := service.UpdateCategory(p)
+			assert.ErrorIs(t, category.ErrInvalidCategoryType, err)
+		})
+	})
+}
