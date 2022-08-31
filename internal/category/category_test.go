@@ -208,3 +208,39 @@ func TestUpdateCategory(t *testing.T) {
 		})
 	})
 }
+
+func TestDeleteById(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		payload := &category.Category{
+			CategoryId:   1,
+			CategoryName: "Food",
+			UserId:       1,
+			CategoryType: category.ExpenseCategory,
+		}
+
+		db.Create(&payload)
+
+		t.Run("should delete existing data", func(t *testing.T) {
+			err := service.DeleteById(payload.CategoryId, payload.UserId)
+			assert.NoError(t, err)
+
+			var existing *category.Category
+			db.Where("category_id = ?", payload.CategoryId).First(&existing)
+			assert.Equal(t, 0, existing.CategoryId)
+		})
+
+		t.Run("return error if category not found", func(t *testing.T) {
+			err := service.DeleteById(99, payload.UserId)
+			assert.ErrorIs(t, err, category.ErrCategoryNotFound)
+		})
+
+		t.Run("return error if user id is not match with existing", func(t *testing.T) {
+			err := service.DeleteById(payload.CategoryId, 99)
+			assert.ErrorIs(t, err, category.ErrCategoryNotFound)
+		})
+	})
+}

@@ -69,6 +69,7 @@ type CategoryRepository interface {
 	GetByTypeAndUserId(categoryType CategoryType, userId int) []*Category
 	GetById(categoryId int) *Category
 	UpdateById(categoryId int, payload *Category) error
+	DeleteById(categoryId int) error
 }
 
 type CategoryService struct {
@@ -141,6 +142,20 @@ func (s *CategoryService) UpdateCategory(payload *UpdateCategoryPayload) error {
 	}
 
 	err := s.repository.UpdateById(existing.CategoryId, existing)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *CategoryService) DeleteById(categoryId, userId int) error {
+	existing := s.repository.GetById(categoryId)
+	if existing == nil || existing.UserId != userId {
+		return ErrCategoryNotFound
+	}
+
+	err := s.repository.DeleteById(existing.CategoryId)
 	if err != nil {
 		return err
 	}

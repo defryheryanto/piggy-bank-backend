@@ -132,3 +132,28 @@ func HandleUpdateCategory(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleDeleteCategory(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sCategoryId := mux.Vars(r)["category_id"]
+		categoryId, err := strconv.Atoi(sCategoryId)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Category ID must be an number", "category_id is not a number"))
+			return
+		}
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.ErrInvalidSession)
+			return
+		}
+
+		err = a.CategoryService.DeleteById(categoryId, session.UserID)
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
+	}
+}

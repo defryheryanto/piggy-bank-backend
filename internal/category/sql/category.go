@@ -48,3 +48,12 @@ func (s *CategoryStorage) UpdateById(categoryId int, payload *category.Category)
 
 	return nil
 }
+
+func (s *CategoryStorage) DeleteById(categoryId int) error {
+	err := s.db.Model(&category.Category{}).Delete("category_id = ?", categoryId)
+	if err.Error != nil {
+		return err.Error
+	}
+
+	return nil
+}
