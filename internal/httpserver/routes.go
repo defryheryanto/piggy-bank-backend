@@ -5,6 +5,7 @@ import (
 
 	account_handler "github.com/defryheryanto/piggy-bank-backend/internal/account/handler"
 	auth_handler "github.com/defryheryanto/piggy-bank-backend/internal/auth/handler"
+	budget_handler "github.com/defryheryanto/piggy-bank-backend/internal/budget/handler"
 	category_handler "github.com/defryheryanto/piggy-bank-backend/internal/category/handler"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/middleware"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
@@ -36,6 +37,8 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute.HandleFunc("/api/v1/categories/{category_id}", category_handler.HandleGetCategory(s.application)).Methods(http.MethodGet)
 	privateRoute.HandleFunc("/api/v1/categories/{category_id}", category_handler.HandleUpdateCategory(s.application)).Methods(http.MethodPatch)
 	privateRoute.HandleFunc("/api/v1/categories/{category_id}", category_handler.HandleDeleteCategory(s.application)).Methods(http.MethodDelete)
+
+	privateRoute.HandleFunc("/api/v1/budgets", budget_handler.HandleCreateBudget(s.application)).Methods(http.MethodPost)
 
 	return r
 }

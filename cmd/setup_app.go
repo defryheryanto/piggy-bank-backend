@@ -9,9 +9,11 @@ func buildApp() *app.Application {
 	authService := SetupAuthService(piggyBankDatabase)
 	accountService := setupAccountService(piggyBankDatabase)
 	categoryService := SetupCategoryService(piggyBankDatabase)
+	budgetService := SetupBudgetService(piggyBankDatabase)
 	return &app.Application{
 		AuthService:     authService,
 		AccountService:  accountService,
 		CategoryService: categoryService,
+		BudgetService:   budgetService,
 	}
 }
