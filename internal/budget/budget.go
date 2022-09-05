@@ -1,5 +1,12 @@
 package budget
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/defryheryanto/piggy-bank-backend/internal/category"
+)
+
 type Budget struct {
 	BudgetId   int   `gorm:"primaryKey;autoIncrement;column:budget_id" json:"budget_id"`
 	CategoryId int   `gorm:"column:category_id" json:"category_id"`
@@ -12,16 +19,29 @@ func (Budget) TableName() string {
 	return "budgets"
 }
 
+type BudgetDetail struct {
+	Month  string `json:"month"`
+	Year   int    `json:"year"`
+	Budget int64  `json:"budget"`
+}
+
+type BudgetSummary struct {
+	DefaultBudget int64           `json:"default_budget"`
+	Budgets       []*BudgetDetail `json:"budgets"`
+}
+
 type BudgetRepository interface {
 	Create(payload *Budget) error
+	GetByMonthAndYear(categoryId, month, year int) *Budget
 }
 
 type BudgetService struct {
-	repository BudgetRepository
+	repository      BudgetRepository
+	categoryService *category.CategoryService
 }
 
-func NewBudgetService(repo BudgetRepository) *BudgetService {
-	return &BudgetService{repo}
+func NewBudgetService(repo BudgetRepository, category *category.CategoryService) *BudgetService {
+	return &BudgetService{repo, category}
 }
 
 func (s *BudgetService) Create(payload *CreateBudgetPayload) error {
@@ -38,4 +58,32 @@ func (s *BudgetService) Create(payload *CreateBudgetPayload) error {
 	}
 
 	return s.repository.Create(budget)
+}
+
+func (s *BudgetService) GetBudgetYearSummary(categoryId, year int) (*BudgetSummary, error) {
+	category, err := s.categoryService.GetCategoryById(categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	budgets := []*BudgetDetail{}
+	for i := 1; i <= 12; i++ {
+		budget := s.repository.GetByMonthAndYear(categoryId, i, year)
+		value := category.Budget
+		if budget != nil {
+			fmt.Println(*budget)
+			value = budget.Budget
+		}
+
+		budgets = append(budgets, &BudgetDetail{
+			Month:  time.Month(i).String(),
+			Year:   year,
+			Budget: value,
+		})
+	}
+
+	return &BudgetSummary{
+		DefaultBudget: category.Budget,
+		Budgets:       budgets,
+	}, nil
 }

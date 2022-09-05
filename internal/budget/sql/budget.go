@@ -21,3 +21,14 @@ func (s *BudgetStorage) Create(payload *budget.Budget) error {
 
 	return nil
 }
+
+func (s *BudgetStorage) GetByMonthAndYear(categoryId, month, year int) *budget.Budget {
+	var budget *budget.Budget
+
+	s.db.Where("month = ? AND year = ? AND category_id = ?", month, year, categoryId).First(&budget)
+	if budget.BudgetId == 0 {
+		return nil
+	}
+
+	return budget
+}
