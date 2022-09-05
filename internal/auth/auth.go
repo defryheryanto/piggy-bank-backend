@@ -95,10 +95,15 @@ func (s *AuthService) Authenticate(token string) (bool, error) {
 }
 
 func (s *AuthService) GetCurrentUser(token string) (*AuthSession, error) {
-	currentUser, err := s.tokenService.Parse(token)
+	currentSession, err := s.tokenService.Parse(token)
 	if err != nil {
 		return nil, err
 	}
 
-	return currentUser, nil
+	currentUser := s.userStorage.GetByUsername(currentSession.Username)
+	if currentUser == nil {
+		return nil, ErrUserNotFound
+	}
+
+	return currentSession, nil
 }
