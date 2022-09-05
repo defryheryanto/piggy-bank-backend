@@ -1,7 +1,6 @@
 package budget
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/category"
@@ -32,6 +31,7 @@ type BudgetSummary struct {
 
 type BudgetRepository interface {
 	Create(payload *Budget) error
+	Update(payload *Budget) error
 	GetByMonthAndYear(categoryId, month, year int) *Budget
 }
 
@@ -44,7 +44,7 @@ func NewBudgetService(repo BudgetRepository, category *category.CategoryService)
 	return &BudgetService{repo, category}
 }
 
-func (s *BudgetService) Create(payload *CreateBudgetPayload) error {
+func (s *BudgetService) CreateOrUpdate(payload *CreateBudgetPayload) error {
 	err := payload.Validate()
 	if err != nil {
 		return err
@@ -57,7 +57,19 @@ func (s *BudgetService) Create(payload *CreateBudgetPayload) error {
 		Budget:     payload.Budget,
 	}
 
-	return s.repository.Create(budget)
+	existing := s.repository.GetByMonthAndYear(budget.CategoryId, budget.Month, budget.Year)
+	if existing != nil {
+		budget.BudgetId = existing.BudgetId
+		err = s.repository.Update(budget)
+	} else {
+		err = s.repository.Create(budget)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *BudgetService) GetBudgetYearSummary(categoryId, year int) (*BudgetSummary, error) {
@@ -71,7 +83,6 @@ func (s *BudgetService) GetBudgetYearSummary(categoryId, year int) (*BudgetSumma
 		budget := s.repository.GetByMonthAndYear(categoryId, i, year)
 		value := category.Budget
 		if budget != nil {
-			fmt.Println(*budget)
 			value = budget.Budget
 		}
 

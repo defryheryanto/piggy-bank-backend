@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func HandleCreateBudget(a *app.Application) http.HandlerFunc {
+func HandleUpsertBudget(a *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &budget.CreateBudgetPayload{}
 
@@ -44,7 +44,7 @@ func HandleCreateBudget(a *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = a.BudgetService.Create(payload)
+		err = a.BudgetService.CreateOrUpdate(payload)
 		if err != nil {
 			response.WithError(w, err)
 			return

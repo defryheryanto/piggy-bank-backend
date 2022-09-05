@@ -70,13 +70,13 @@ func initBudget(db *gorm.DB, t *testing.T) (*category.Category, []*budget.Budget
 	return initCategory, initBudgets
 }
 
-func TestCreate(t *testing.T) {
+func TestCreateOrUpdate(t *testing.T) {
 	db := setupDatabase(t)
 
 	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
 		service := setupService(db)
 
-		t.Run("should insert to db", func(t *testing.T) {
+		t.Run("should insert to db if not exists", func(t *testing.T) {
 			payload := &budget.CreateBudgetPayload{
 				CategoryId: 1,
 				Month:      9,
@@ -84,8 +84,34 @@ func TestCreate(t *testing.T) {
 				Budget:     1500000,
 			}
 
-			err := service.Create(payload)
+			err := service.CreateOrUpdate(payload)
 			assert.NoError(t, err)
+		})
+
+		t.Run("should update db if existing month and year budget is exists", func(t *testing.T) {
+			initBudget := &budget.Budget{
+				BudgetId:   77,
+				CategoryId: 1,
+				Month:      1,
+				Year:       2022,
+				Budget:     4000000,
+			}
+
+			res := db.Create(&initBudget)
+			assert.NoError(t, res.Error)
+
+			payload := &budget.CreateBudgetPayload{
+				CategoryId: initBudget.CategoryId,
+				Month:      initBudget.Month,
+				Year:       initBudget.Year,
+				Budget:     1245000,
+			}
+			err := service.CreateOrUpdate(payload)
+			assert.NoError(t, err)
+
+			existingBudget := &budget.Budget{}
+			db.Where("budget_id = ?", initBudget.BudgetId).First(&existingBudget)
+			assert.Equal(t, payload.Budget, existingBudget.Budget)
 		})
 
 		t.Run("return error if month is invalid", func(t *testing.T) {
@@ -96,7 +122,7 @@ func TestCreate(t *testing.T) {
 				Budget:     1500000,
 			}
 
-			err := service.Create(payload)
+			err := service.CreateOrUpdate(payload)
 			assert.ErrorIs(t, err, budget.ErrInvalidMonthBudget)
 
 			payload = &budget.CreateBudgetPayload{
@@ -105,7 +131,7 @@ func TestCreate(t *testing.T) {
 				Year:       2022,
 				Budget:     1500000,
 			}
-			err = service.Create(payload)
+			err = service.CreateOrUpdate(payload)
 			assert.ErrorIs(t, err, budget.ErrInvalidMonthBudget)
 		})
 	})

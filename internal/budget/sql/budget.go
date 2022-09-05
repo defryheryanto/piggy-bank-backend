@@ -22,6 +22,15 @@ func (s *BudgetStorage) Create(payload *budget.Budget) error {
 	return nil
 }
 
+func (s *BudgetStorage) Update(payload *budget.Budget) error {
+	result := s.db.Where("budget_id = ?", payload.BudgetId).Updates(&payload)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (s *BudgetStorage) GetByMonthAndYear(categoryId, month, year int) *budget.Budget {
 	var budget *budget.Budget
 
