@@ -10,13 +10,21 @@ func (UserConfig) TableName() string {
 	return "user_configs"
 }
 
-var DefaultUserConfig = UserConfig{
-	MonthlyStartDate: 1,
+type UpdateUserConfigPayload struct {
+	UserId           int `json:"user_id"`
+	MonthlyStartDate int `json:"monthly_start_date"`
 }
 
 type UserConfigRepository interface {
 	Create(payload *UserConfig) error
+	Update(payload *UserConfig) error
 	GetByUserId(userId int) *UserConfig
+}
+
+func DefaultUserConfig() *UserConfig {
+	return &UserConfig{
+		MonthlyStartDate: 1,
+	}
 }
 
 type UserConfigService struct {
@@ -28,7 +36,7 @@ func NewUserConfigService(repo UserConfigRepository) *UserConfigService {
 }
 
 func (s *UserConfigService) CreateDefault(userId int) error {
-	payload := &DefaultUserConfig
+	payload := DefaultUserConfig()
 	payload.UserId = userId
 
 	err := s.repository.Create(payload)
@@ -50,4 +58,32 @@ func (s *UserConfigService) GetByUserId(userId int) (*UserConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func (s *UserConfigService) Update(payload *UpdateUserConfigPayload) error {
+	cfg := s.repository.GetByUserId(payload.UserId)
+	if cfg == nil {
+		defaultCfg := DefaultUserConfig()
+		populateUpdateConfig(defaultCfg, payload)
+		err := s.repository.Create(defaultCfg)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	populateUpdateConfig(cfg, payload)
+	err := s.repository.Update(cfg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func populateUpdateConfig(current *UserConfig, payload *UpdateUserConfigPayload) {
+	current.UserId = payload.UserId
+	if payload.MonthlyStartDate != 0 {
+		current.MonthlyStartDate = payload.MonthlyStartDate
+	}
 }

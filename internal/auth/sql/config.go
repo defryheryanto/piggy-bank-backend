@@ -32,3 +32,12 @@ func (s *UserConfigStorage) GetByUserId(userId int) *auth.UserConfig {
 
 	return cfg
 }
+
+func (s *UserConfigStorage) Update(payload *auth.UserConfig) error {
+	db := s.db.Where("user_id = ?", payload.UserId).Updates(&payload)
+	if db.Error != nil {
+		return db.Error
+	}
+
+	return nil
+}

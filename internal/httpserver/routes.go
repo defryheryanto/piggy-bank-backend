@@ -43,6 +43,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute.HandleFunc("/api/v1/categories/{category_id}/budgets", budget_handler.HandleGetBudgetYearSummary(s.application)).Methods(http.MethodGet)
 
 	privateRoute.HandleFunc("/api/v1/config/me", auth_handler.HandleGetUserConfig(s.application)).Methods(http.MethodGet)
+	privateRoute.HandleFunc("/api/v1/config/me", auth_handler.HandleUpdateUserConfig(s.application)).Methods(http.MethodPut)
 
 	return r
 }
