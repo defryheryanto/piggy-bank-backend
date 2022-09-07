@@ -170,3 +170,96 @@ func TestGetBudgetYearSummary(t *testing.T) {
 		})
 	})
 }
+
+func TestGetActiveBudge(t *testing.T) {
+	db := setupDatabase(t)
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		initCategories := []*category.Category{
+			{
+				CategoryId:   1,
+				CategoryName: "Food",
+				UserId:       1,
+				CategoryType: category.ExpenseCategory,
+				Budget:       1500000,
+			},
+			{
+				CategoryId:   2,
+				CategoryName: "Food",
+				UserId:       2,
+				CategoryType: category.ExpenseCategory,
+			},
+			{
+				CategoryId:   3,
+				CategoryName: "Other",
+				UserId:       1,
+				CategoryType: category.ExpenseCategory,
+				Budget:       2500000,
+			},
+			{
+				CategoryId:   4,
+				CategoryName: "Salary",
+				UserId:       1,
+				CategoryType: category.IncomeCategory,
+				Budget:       25000000,
+			},
+		}
+
+		db.Create(&initCategories)
+
+		t.Run("get active budget on expense category only", func(t *testing.T) {
+			actives := service.GetActiveBudget(1, 9, 2022)
+
+			//check if length of active budget is the same with expense categories count
+			assert.Equal(t, 2, len(actives))
+		})
+
+		t.Run("get active budget from category if budget not exists", func(t *testing.T) {
+			actives := service.GetActiveBudget(1, 9, 2022)
+
+			//check if length of active budget is the same with expense categories count
+			assert.Equal(t, 2, len(actives))
+
+			for _, active := range actives {
+				for _, cat := range initCategories {
+					if active.CategoryName == cat.CategoryName && cat.UserId == 1 {
+						assert.Equal(t, cat.Budget, active.Budget)
+					}
+				}
+			}
+		})
+
+		t.Run("get active budget from budget if exists", func(t *testing.T) {
+			budgets := []*budget.Budget{
+				{
+					CategoryId: 1,
+					Month:      9,
+					Year:       2022,
+					Budget:     9500000,
+				},
+				{
+					CategoryId: 3,
+					Month:      9,
+					Year:       2022,
+					Budget:     2150000,
+				},
+			}
+
+			db.Create(budgets)
+			actives := service.GetActiveBudget(1, 9, 2022)
+
+			//check if length of active budget is the same with expense categories count
+			assert.Equal(t, 2, len(actives))
+
+			for _, active := range actives {
+				for _, bdg := range budgets {
+					if active.CategoryId == bdg.CategoryId {
+						assert.Equal(t, bdg.Budget, active.Budget)
+					}
+				}
+			}
+		})
+	})
+}

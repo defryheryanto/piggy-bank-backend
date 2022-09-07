@@ -80,3 +80,31 @@ func HandleGetBudgetYearSummary(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, summary)
 	}
 }
+
+func HandleGetActiveBudgets(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sYear := r.URL.Query().Get("year")
+		sMonth := r.URL.Query().Get("month")
+
+		year, err := strconv.Atoi(sYear)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Year must be a number", "year must be a numeric"))
+			return
+		}
+
+		month, err := strconv.Atoi(sMonth)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Month must be a number", "month must be a numeric"))
+			return
+		}
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.ErrInvalidSession)
+			return
+		}
+
+		activeBudgets := a.BudgetService.GetActiveBudget(session.UserID, month, year)
+		response.WithJSON(w, http.StatusOK, activeBudgets)
+	}
+}

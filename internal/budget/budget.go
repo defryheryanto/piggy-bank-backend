@@ -29,6 +29,12 @@ type BudgetSummary struct {
 	Budgets       []*BudgetDetail `json:"budgets"`
 }
 
+type ActiveBudgetDetail struct {
+	CategoryId   int    `json:"category_id"`
+	CategoryName string `json:"category_name"`
+	Budget       int64  `json:"budget"`
+}
+
 type BudgetRepository interface {
 	Create(payload *Budget) error
 	Update(payload *Budget) error
@@ -97,4 +103,23 @@ func (s *BudgetService) GetBudgetYearSummary(categoryId, year int) (*BudgetSumma
 		DefaultBudget: category.Budget,
 		Budgets:       budgets,
 	}, nil
+}
+
+func (s *BudgetService) GetActiveBudget(userId, month, year int) []*ActiveBudgetDetail {
+	categories := s.categoryService.GetByCategoryTypeAndUserId(category.ExpenseCategory, userId)
+	activeBudgets := []*ActiveBudgetDetail{}
+	for _, cat := range categories {
+		bdg := s.repository.GetByMonthAndYear(cat.CategoryId, month, year)
+		active := cat.Budget
+		if bdg != nil {
+			active = bdg.Budget
+		}
+		activeBudgets = append(activeBudgets, &ActiveBudgetDetail{
+			CategoryId:   cat.CategoryId,
+			CategoryName: cat.CategoryName,
+			Budget:       active,
+		})
+	}
+
+	return activeBudgets
 }

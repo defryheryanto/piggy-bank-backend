@@ -163,6 +163,10 @@ func (s *CategoryService) DeleteById(categoryId, userId int) error {
 	return nil
 }
 
+func (s *CategoryService) GetByCategoryTypeAndUserId(categoryType CategoryType, userId int) []*Category {
+	return s.repository.GetByTypeAndUserId(categoryType, userId)
+}
+
 func ValidateCategoryType(categoryType CategoryType) error {
 	isContain := slices.Contains(CategoryTypes, CategoryType(categoryType))
 	if !isContain {
