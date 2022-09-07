@@ -24,17 +24,19 @@ type AuthSession struct {
 }
 
 type AuthService struct {
-	userStorage  UserRepository
-	tokenService token.TokenIService[*AuthSession]
-	encryptor    encrypt.Encryptor
+	userStorage   UserRepository
+	tokenService  token.TokenIService[*AuthSession]
+	encryptor     encrypt.Encryptor
+	configService *UserConfigService
 }
 
 func NewAuthService(
 	userStorage UserRepository,
 	tokenService token.TokenIService[*AuthSession],
 	encryptor encrypt.Encryptor,
+	cfg *UserConfigService,
 ) *AuthService {
-	return &AuthService{userStorage, tokenService, encryptor}
+	return &AuthService{userStorage, tokenService, encryptor, cfg}
 }
 
 func (s *AuthService) Register(payload *User) error {
@@ -53,6 +55,12 @@ func (s *AuthService) Register(payload *User) error {
 	}
 
 	err = s.userStorage.Create(user)
+	if err != nil {
+		return err
+	}
+
+	user = s.userStorage.GetByUsername(user.Username)
+	err = s.configService.CreateDefault(user.UserID)
 	if err != nil {
 		return err
 	}
@@ -83,6 +91,10 @@ func (s *AuthService) Login(username, password string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (s *AuthService) GetByUsername(username string) *User {
+	return s.userStorage.GetByUsername(username)
 }
 
 func (s *AuthService) Authenticate(token string) (bool, error) {

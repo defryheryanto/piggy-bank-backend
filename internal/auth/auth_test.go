@@ -17,11 +17,12 @@ func setupService(t *testing.T, db *gorm.DB) *auth.AuthService {
 	userStorage := user_storage.NewUserStorage(db)
 	tokenService := jwt_service.NewJWTTokenService[*auth.AuthSession](jwt.SigningMethodHS256, "testsecret", nil)
 	encryptor, err := aes.NewAESEncryptor("secret_need_to_be_32_characters!")
+	configService := setupUserConfigService(db)
 	if err != nil {
 		t.Errorf("failed to initialize encryptor %v", err)
 	}
 
-	return auth.NewAuthService(userStorage, tokenService, encryptor)
+	return auth.NewAuthService(userStorage, tokenService, encryptor, configService)
 }
 
 func TestRegister(t *testing.T) {
@@ -55,6 +56,23 @@ func TestRegister(t *testing.T) {
 			if err != auth.ErrUsernameHasTaken {
 				t.Errorf("should raise error if username is exists")
 			}
+		})
+
+		t.Run("create a default user config", func(t *testing.T) {
+			user := &auth.User{
+				Username: "TestUser2",
+				Password: "123123",
+			}
+			err := service.Register(user)
+			assert.NoError(t, err)
+
+			user = service.GetByUsername(user.Username)
+
+			var cfg *auth.UserConfig
+			db.Where("user_id = ?", user.UserID).First(&cfg)
+
+			assert.Equal(t, user.UserID, cfg.UserId)
+			assert.Equal(t, 1, cfg.MonthlyStartDate)
 		})
 	})
 }

@@ -1,4 +1,4 @@
-package storage
+package sql
 
 import (
 	"github.com/defryheryanto/piggy-bank-backend/internal/auth"
