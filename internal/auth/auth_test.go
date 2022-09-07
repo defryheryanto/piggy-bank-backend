@@ -114,3 +114,63 @@ func TestLogin(t *testing.T) {
 		})
 	})
 }
+
+func TestAuthenticate(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(t, db)
+
+		user := &auth.User{
+			Username: "TestUser",
+			Password: "123123",
+		}
+		err := service.Register(user)
+		assert.NoError(t, err)
+
+		t.Run("return true if token is valid", func(t *testing.T) {
+			token, err := service.Login(user.Username, user.Password)
+			assert.NoError(t, err)
+			assert.NotEqual(t, "", token)
+
+			isValid, err := service.Authenticate(token)
+			assert.NoError(t, err)
+			assert.Equal(t, true, isValid)
+		})
+
+		t.Run("return false if token is valid", func(t *testing.T) {
+			isValid, err := service.Authenticate("eynhdfaheafgaer_dsfefsdf")
+			assert.NotNil(t, err)
+			assert.Equal(t, false, isValid)
+		})
+	})
+}
+
+func TestGetCurrentUser(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(t, db)
+
+		user := &auth.User{
+			Username: "TestUser",
+			Password: "123123",
+		}
+		err := service.Register(user)
+		assert.NoError(t, err)
+
+		t.Run("return correct user", func(t *testing.T) {
+			token, err := service.Login(user.Username, user.Password)
+			assert.NoError(t, err)
+			assert.NotEqual(t, "", token)
+
+			usr, err := service.GetCurrentUser(token)
+			assert.NoError(t, err)
+			assert.Equal(t, user.Username, usr.Username)
+		})
+
+		t.Run("return error if token invalid", func(t *testing.T) {
+			usr, err := service.GetCurrentUser("eyjsjdawdrt-sadawdasd_Adawdasd")
+			assert.NotNil(t, err)
+			assert.Nil(t, usr)
+		})
+	})
+}

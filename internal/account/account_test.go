@@ -145,6 +145,19 @@ func TestCreateAccount(t *testing.T) {
 				t.Errorf("updated_at should not be nil")
 			}
 		})
+
+		t.Run("return error if account type is not exists", func(t *testing.T) {
+			service := setupAccountService(db)
+			payload := &account.Account{
+				AccountName:   "BCA",
+				AccountTypeID: 99,
+				UserID:        1,
+			}
+
+			err := service.CreateAccount(payload)
+			assert.NotNil(t, err)
+			assert.ErrorIs(t, err, account.ErrAccountTypeNotFound)
+		})
 	})
 }
 
@@ -197,6 +210,23 @@ func TestUpdateAccount(t *testing.T) {
 			}
 
 			err := service.UpdateAccount(payload)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+		})
+
+		t.Run("return error if payload account id is 0 or nil", func(t *testing.T) {
+			service := setupAccountService(db)
+
+			payload := &account.UpdateAccountPayload{
+				AccountID:     0,
+				AccountName:   "Mandiri",
+				AccountTypeID: 99,
+				UserID:        1,
+			}
+
+			err := service.UpdateAccount(payload)
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+
+			err = service.UpdateAccount(nil)
 			assert.ErrorIs(t, err, account.ErrAccountNotFound)
 		})
 

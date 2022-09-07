@@ -16,6 +16,27 @@ func setupService(db *gorm.DB) *category.CategoryService {
 	return category.NewCategoryService(userStorage)
 }
 
+func TestUpdateCategoryPayload(t *testing.T) {
+	t.Run("Validate()", func(t *testing.T) {
+		payload := &category.UpdateCategoryPayload{}
+
+		err := payload.Validate()
+		assert.NotNil(t, err)
+
+		payload.CategoryId = 1
+		err = payload.Validate()
+		assert.NotNil(t, err)
+
+		payload.CategoryName = "name"
+		err = payload.Validate()
+		assert.NotNil(t, err)
+
+		payload.CategoryType = category.IncomeCategory
+		err = payload.Validate()
+		assert.Nil(t, err)
+	})
+}
+
 func TestCreate(t *testing.T) {
 	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
 
@@ -172,6 +193,18 @@ func TestUpdateCategory(t *testing.T) {
 		t.Run("return error if category not found", func(t *testing.T) {
 			p := &category.UpdateCategoryPayload{
 				CategoryId:   99,
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				UserId:       int64(payload.UserId),
+			}
+
+			err := service.UpdateCategory(p)
+			assert.ErrorIs(t, category.ErrCategoryNotFound, err)
+		})
+
+		t.Run("return error if category id is 0", func(t *testing.T) {
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   0,
 				CategoryName: "Salary",
 				CategoryType: category.IncomeCategory,
 				UserId:       int64(payload.UserId),
