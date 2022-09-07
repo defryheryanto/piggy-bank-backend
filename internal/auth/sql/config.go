@@ -21,3 +21,14 @@ func (s *UserConfigStorage) Create(payload *auth.UserConfig) error {
 
 	return nil
 }
+
+func (s *UserConfigStorage) GetByUserId(userId int) *auth.UserConfig {
+	var cfg *auth.UserConfig
+
+	s.db.Where("user_id = ?", userId).First(&cfg)
+	if cfg.ConfigId == 0 {
+		return nil
+	}
+
+	return cfg
+}

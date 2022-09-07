@@ -10,8 +10,13 @@ func (UserConfig) TableName() string {
 	return "user_configs"
 }
 
+var DefaultUserConfig = UserConfig{
+	MonthlyStartDate: 1,
+}
+
 type UserConfigRepository interface {
 	Create(payload *UserConfig) error
+	GetByUserId(userId int) *UserConfig
 }
 
 type UserConfigService struct {
@@ -23,10 +28,8 @@ func NewUserConfigService(repo UserConfigRepository) *UserConfigService {
 }
 
 func (s *UserConfigService) CreateDefault(userId int) error {
-	payload := &UserConfig{
-		UserId:           userId,
-		MonthlyStartDate: 1,
-	}
+	payload := &DefaultUserConfig
+	payload.UserId = userId
 
 	err := s.repository.Create(payload)
 	if err != nil {
@@ -34,4 +37,17 @@ func (s *UserConfigService) CreateDefault(userId int) error {
 	}
 
 	return nil
+}
+
+func (s *UserConfigService) GetByUserId(userId int) (*UserConfig, error) {
+	cfg := s.repository.GetByUserId(userId)
+	if cfg == nil {
+		err := s.CreateDefault(userId)
+		if err != nil {
+			return nil, err
+		}
+		cfg = s.repository.GetByUserId(userId)
+	}
+
+	return cfg, nil
 }

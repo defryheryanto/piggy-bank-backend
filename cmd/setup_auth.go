@@ -10,15 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupAuthService(db *gorm.DB) *auth.AuthService {
+func SetupAuthService(db *gorm.DB, userConfig *auth.UserConfigService) *auth.AuthService {
 	userStorage := auth_storage.NewUserStorage(db)
 	tokenService := jwt_service.NewJWTTokenService[*auth.AuthSession](jwt.SigningMethodHS256, config.JWTSecretKey(), nil)
 	encryptor, err := aes.NewAESEncryptor(config.AESSecretKey())
-	userConfigService := SetupUserConfigService(db)
 	if err != nil {
 		panic(err)
 	}
-	return auth.NewAuthService(userStorage, tokenService, encryptor, userConfigService)
+	return auth.NewAuthService(userStorage, tokenService, encryptor, userConfig)
 }
 
 func SetupUserConfigService(db *gorm.DB) *auth.UserConfigService {

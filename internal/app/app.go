@@ -8,8 +8,9 @@ import (
 )
 
 type Application struct {
-	AuthService     *auth.AuthService
-	AccountService  *account.AccountService
-	CategoryService *category.CategoryService
-	BudgetService   *budget.BudgetService
+	AuthService       *auth.AuthService
+	AccountService    *account.AccountService
+	CategoryService   *category.CategoryService
+	BudgetService     *budget.BudgetService
+	UserConfigService *auth.UserConfigService
 }

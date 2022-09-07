@@ -6,14 +6,16 @@ import (
 
 func buildApp() *app.Application {
 	piggyBankDatabase := setupDatabase()
-	authService := SetupAuthService(piggyBankDatabase)
+	userConfigService := SetupUserConfigService(piggyBankDatabase)
+	authService := SetupAuthService(piggyBankDatabase, userConfigService)
 	accountService := setupAccountService(piggyBankDatabase)
 	categoryService := SetupCategoryService(piggyBankDatabase)
 	budgetService := SetupBudgetService(piggyBankDatabase, categoryService)
 	return &app.Application{
-		AuthService:     authService,
-		AccountService:  accountService,
-		CategoryService: categoryService,
-		BudgetService:   budgetService,
+		AuthService:       authService,
+		AccountService:    accountService,
+		CategoryService:   categoryService,
+		BudgetService:     budgetService,
+		UserConfigService: userConfigService,
 	}
 }

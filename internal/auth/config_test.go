@@ -34,8 +34,35 @@ func TestCreateDefault(t *testing.T) {
 			cfg := &auth.UserConfig{}
 			db.Where("user_id = 1").First(&cfg)
 
-			//check default config values
-			assert.Equal(t, 1, cfg.MonthlyStartDate)
+			assert.Equal(t, auth.DefaultUserConfig.MonthlyStartDate, cfg.MonthlyStartDate)
+		})
+	})
+}
+
+func TestGetByUserId(t *testing.T) {
+	db := setupDatabase(t)
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupUserConfigService(db)
+
+		t.Run("return existing user config", func(t *testing.T) {
+			userId := 1
+			initCfg := &auth.UserConfig{
+				UserId:           userId,
+				MonthlyStartDate: 25,
+			}
+
+			db.Create(&initCfg)
+
+			cfg, err := service.GetByUserId(userId)
+			assert.NoError(t, err)
+			assert.Equal(t, initCfg.MonthlyStartDate, cfg.MonthlyStartDate)
+		})
+
+		t.Run("create default user config if not exists and return it", func(t *testing.T) {
+			cfg, err := service.GetByUserId(2)
+			assert.NoError(t, err)
+			assert.Equal(t, auth.DefaultUserConfig.MonthlyStartDate, cfg.MonthlyStartDate)
 		})
 	})
 }
