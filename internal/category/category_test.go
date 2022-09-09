@@ -301,3 +301,41 @@ func TestDeleteById(t *testing.T) {
 		})
 	})
 }
+
+func TestUpdateBudget(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+
+	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
+		service := setupService(db)
+
+		payload := &category.Category{
+			CategoryId:   1,
+			CategoryName: "Food",
+			UserId:       1,
+			CategoryType: category.ExpenseCategory,
+			Budget:       150000,
+		}
+
+		db.Create(&payload)
+
+		t.Run("update the budget", func(t *testing.T) {
+			err := service.UpdateBudget(payload.CategoryId, 200000)
+			assert.NoError(t, err)
+
+			updated, err := service.GetCategoryById(payload.CategoryId)
+			assert.NoError(t, err)
+
+			assert.Equal(t, int64(200000), updated.Budget)
+		})
+
+		t.Run("able to update the budget to 0", func(t *testing.T) {
+			err := service.UpdateBudget(payload.CategoryId, 0)
+			assert.NoError(t, err)
+
+			updated, err := service.GetCategoryById(payload.CategoryId)
+			assert.NoError(t, err)
+
+			assert.Equal(t, int64(0), updated.Budget)
+		})
+	})
+}

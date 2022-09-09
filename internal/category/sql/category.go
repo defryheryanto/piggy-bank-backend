@@ -41,7 +41,14 @@ func (s *CategoryStorage) GetById(categoryId int) *category.Category {
 }
 
 func (s *CategoryStorage) UpdateById(categoryId int, payload *category.Category) error {
-	res := s.db.Where("category_id = ?", categoryId).Updates(&payload)
+	res := s.db.Model(payload).
+		Select("category_name", "category_type", "budget").
+		Where("category_id = ?", categoryId).
+		Updates(map[string]interface{}{
+			"category_name": payload.CategoryName,
+			"category_type": payload.CategoryType,
+			"budget":        payload.Budget,
+		})
 	if res.Error != nil {
 		return res.Error
 	}

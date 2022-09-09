@@ -163,6 +163,21 @@ func (s *CategoryService) GetByCategoryTypeAndUserId(categoryType CategoryType, 
 	return s.repository.GetByTypeAndUserId(categoryType, userId)
 }
 
+func (s *CategoryService) UpdateBudget(categoryId int, budget int64) error {
+	existing := s.repository.GetById(categoryId)
+	if existing == nil {
+		return ErrCategoryNotFound
+	}
+
+	existing.Budget = budget
+	err := s.repository.UpdateById(existing.CategoryId, existing)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ValidateCategoryType(categoryType CategoryType) error {
 	isContain := slices.Contains(CategoryTypes, CategoryType(categoryType))
 	if !isContain {

@@ -157,3 +157,38 @@ func HandleDeleteCategory(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleUpdateDefaultBudget(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type payload struct {
+			Budget *int64 `json:"budget"`
+		}
+		sCategoryId := mux.Vars(r)["category_id"]
+		categoryId, err := strconv.Atoi(sCategoryId)
+		if err != nil {
+			response.WithError(w, errors.NewBadRequestError("Category ID must be an number", "category_id is not a number"))
+			return
+		}
+
+		var p *payload
+		err = json.NewDecoder(r.Body).Decode(&p)
+		if err != nil {
+			if err == io.EOF {
+				response.WithError(w, errors.ErrEmptyPayload)
+				return
+			}
+			response.WithError(w, errors.ErrUnprocessablePayload)
+			return
+		}
+
+		if p.Budget != nil {
+			err = a.CategoryService.UpdateBudget(categoryId, *p.Budget)
+			if err != nil {
+				response.WithError(w, err)
+				return
+			}
+		}
+
+		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
+	}
+}
