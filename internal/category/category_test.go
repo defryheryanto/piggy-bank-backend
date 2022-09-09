@@ -169,12 +169,10 @@ func TestUpdateCategory(t *testing.T) {
 		db.Create(&payload)
 
 		t.Run("should update category", func(t *testing.T) {
-			budget := int64(10000)
 			p := &category.UpdateCategoryPayload{
 				CategoryId:   payload.CategoryId,
 				CategoryName: "Salary",
 				CategoryType: category.IncomeCategory,
-				Budget:       &budget,
 				UserId:       int64(payload.UserId),
 			}
 
@@ -186,7 +184,35 @@ func TestUpdateCategory(t *testing.T) {
 			assert.NotNil(t, updated)
 			assert.Equal(t, p.CategoryName, updated.CategoryName)
 			assert.Equal(t, p.CategoryType, updated.CategoryType)
-			assert.Equal(t, *p.Budget, updated.Budget)
+			assert.Equal(t, p.UserId, int64(updated.UserId))
+		})
+
+		t.Run("should not update the budget", func(t *testing.T) {
+			payloadWithBudget := &category.Category{
+				CategoryId:   2,
+				CategoryName: "Food",
+				UserId:       1,
+				CategoryType: category.ExpenseCategory,
+				Budget:       500000,
+			}
+
+			db.Create(&payloadWithBudget)
+
+			p := &category.UpdateCategoryPayload{
+				CategoryId:   payloadWithBudget.CategoryId,
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				UserId:       int64(payload.UserId),
+			}
+			err := service.UpdateCategory(p)
+			assert.NoError(t, err)
+
+			var updated *category.Category
+			db.Where("category_id = ?", p.CategoryId).First(&updated)
+			assert.NotNil(t, updated)
+			assert.Equal(t, p.CategoryName, updated.CategoryName)
+			assert.Equal(t, p.CategoryType, updated.CategoryType)
+			assert.Equal(t, payloadWithBudget.Budget, updated.Budget)
 			assert.Equal(t, p.UserId, int64(updated.UserId))
 		})
 
@@ -227,12 +253,10 @@ func TestUpdateCategory(t *testing.T) {
 		})
 
 		t.Run("return error if category type is invalid", func(t *testing.T) {
-			budget := int64(10000)
 			p := &category.UpdateCategoryPayload{
 				CategoryId:   payload.CategoryId,
 				CategoryName: "Salary",
 				CategoryType: "ini category",
-				Budget:       &budget,
 				UserId:       int64(payload.UserId),
 			}
 

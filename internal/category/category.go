@@ -46,7 +46,6 @@ type UpdateCategoryPayload struct {
 	CategoryId   int          `json:"category_id"`
 	CategoryName string       `json:"category_name"`
 	CategoryType CategoryType `json:"category_type"`
-	Budget       *int64       `json:"budget"`
 	UserId       int64        `json:"user_id"`
 }
 
@@ -136,9 +135,6 @@ func (s *CategoryService) UpdateCategory(payload *UpdateCategoryPayload) error {
 			return err
 		}
 		existing.CategoryType = payload.CategoryType
-	}
-	if payload.Budget != nil {
-		existing.Budget = *payload.Budget
 	}
 
 	err := s.repository.UpdateById(existing.CategoryId, existing)
