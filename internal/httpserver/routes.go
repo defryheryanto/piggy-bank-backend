@@ -9,6 +9,7 @@ import (
 	category_handler "github.com/defryheryanto/piggy-bank-backend/internal/category/handler"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/middleware"
 	"github.com/defryheryanto/piggy-bank-backend/internal/httpserver/response"
+	trx_handler "github.com/defryheryanto/piggy-bank-backend/internal/transaction/handler"
 	"github.com/gorilla/mux"
 )
 
@@ -45,6 +46,8 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 
 	privateRoute.HandleFunc("/api/v1/config/me", auth_handler.HandleGetUserConfig(s.application)).Methods(http.MethodGet)
 	privateRoute.HandleFunc("/api/v1/config/me", auth_handler.HandleUpdateUserConfig(s.application)).Methods(http.MethodPut)
+
+	privateRoute.HandleFunc("/api/v1/transactions", trx_handler.HandleCreateBasicTransaction(s.application)).Methods(http.MethodPost)
 
 	return r
 }

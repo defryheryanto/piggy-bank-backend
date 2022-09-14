@@ -16,11 +16,6 @@ func setupParticipantService(db *gorm.DB) *transaction.ParticipantService {
 	return transaction.NewParticipantService(participantStorage)
 }
 
-func setupDatabase(t *testing.T) *gorm.DB {
-	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
-	return db
-}
-
 func TestBulkCreate(t *testing.T) {
 	db := setupDatabase(t)
 	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
