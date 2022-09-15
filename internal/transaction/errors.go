@@ -8,3 +8,6 @@ var ErrInvalidUser = errors.NewBadRequestError("User is invalid to create transa
 var ErrInvalidAccount = errors.NewBadRequestError("Account is invalid", "account is invalid")
 var ErrInvalidCategory = errors.NewBadRequestError("Category is invalid", "category is invalid")
 var ErrInvalidTransactionType = errors.NewBadRequestError("Transaction Type is invalid", "transaction type is invalid")
+var ErrInvalidSourceAccount = errors.NewBadRequestError("Source Account is invalid", "source account is invalid")
+var ErrInvalidTargetAccount = errors.NewBadRequestError("Target Account is invalid", "target account is invalid")
+var ErrInvalidTransactionDate = errors.NewBadRequestError("Transaction Date is invalid", "transaction date is invalid")

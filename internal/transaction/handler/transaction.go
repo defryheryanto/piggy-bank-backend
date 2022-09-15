@@ -45,3 +45,35 @@ func HandleCreateBasicTransaction(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleCreateTransfer(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload *transaction.CreateTransferPayload
+
+		err := json.NewDecoder(r.Body).Decode(&payload)
+		if err != nil {
+			if err == io.EOF {
+				response.WithError(w, errors.ErrEmptyPayload)
+				return
+			}
+			response.WithError(w, errors.ErrUnprocessablePayload)
+			return
+		}
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.ErrInvalidSession)
+			return
+		}
+		payload.UserId = session.UserID
+		payload.TransactionDate = time.Now()
+
+		err = a.TransactionService.CreateTransfer(r.Context(), payload)
+		if err != nil {
+			response.WithError(w, err)
+			return
+		}
+
+		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
+	}
+}

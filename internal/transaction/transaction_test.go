@@ -138,9 +138,10 @@ func TestCreateBasic_RollbackIfFailed(t *testing.T) {
 		mockParticipantStorage := sql.NewParticipantMockStorage(func() error {
 			return fmt.Errorf(errorString)
 		})
-		mockTransactionStorage := sql.NewTransactionMockStorage(func() error {
-			return nil
-		})
+		mockTransactionStorage := sql.NewTransactionMockStorage(
+			func() error { return nil },
+			func() error { return nil },
+		)
 		participantService := transaction.NewParticipantService(mockParticipantStorage)
 		sqlManager := storage.NewSQLManager(db)
 		transactionService := transaction.NewTransactionService(mockTransactionStorage, participantService, sqlManager)
@@ -179,5 +180,90 @@ func TestCreateBasic_RollbackIfFailed(t *testing.T) {
 		existingParticipants := []*transaction.Participant{}
 		db.Where("transaction_id = ?", existingTrx.TransactionId).Find(&existingParticipants)
 		assert.Empty(t, existingParticipants)
+	})
+}
+
+func TestCreateTransfer_InsertDetails(t *testing.T) {
+	db := setupDatabase(t)
+	ctx := context.TODO()
+	service := setupTransactionService(db)
+
+	usedTableNames := []string{
+		transaction.Transaction{}.TableName(),
+		transaction.TransferDetail{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, usedTableNames, func() {
+		payload := &transaction.CreateTransferPayload{
+			UserId:          1,
+			SourceAccountId: 1,
+			TargetAccountId: 2,
+			TransactionDate: time.Now(),
+			Description:     "Transfer ke tabungan",
+			Notes:           "Tabungan bulan septemer",
+			Amount:          500000,
+		}
+
+		err := service.CreateTransfer(ctx, payload)
+		assert.NoError(t, err)
+
+		existingTrx := &transaction.Transaction{}
+		db.Last(&existingTrx)
+		assert.Equal(t, payload.UserId, existingTrx.UserId)
+		assert.Equal(t, payload.SourceAccountId, existingTrx.AccountId)
+		assert.Equal(t, payload.TransactionDate.Unix(), existingTrx.TransactionDate.Unix())
+		assert.Equal(t, payload.Description, existingTrx.Description)
+		assert.Equal(t, payload.Notes, existingTrx.Notes)
+		assert.Equal(t, payload.Amount, existingTrx.Amount)
+
+		existingDetail := &transaction.TransferDetail{}
+		db.Last(&existingDetail)
+		assert.Equal(t, existingTrx.TransactionId, existingDetail.TransactionId)
+		assert.Equal(t, payload.TargetAccountId, existingDetail.TargetAccountId)
+	})
+}
+
+func TestCreateTransfer_RollbackIfError(t *testing.T) {
+	db := setupDatabase(t)
+	ctx := context.TODO()
+	errorString := "mock error"
+	mockParticipantStorage := sql.NewParticipantMockStorage(func() error {
+		return fmt.Errorf(errorString)
+	})
+	mockTransactionStorage := sql.NewTransactionMockStorage(
+		func() error { return nil },
+		func() error { return fmt.Errorf(errorString) },
+	)
+	participantService := transaction.NewParticipantService(mockParticipantStorage)
+	sqlManager := storage.NewSQLManager(db)
+	service := transaction.NewTransactionService(mockTransactionStorage, participantService, sqlManager)
+
+	usedTableNames := []string{
+		transaction.Transaction{}.TableName(),
+		transaction.TransferDetail{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, usedTableNames, func() {
+		payload := &transaction.CreateTransferPayload{
+			UserId:          1,
+			SourceAccountId: 1,
+			TargetAccountId: 2,
+			TransactionDate: time.Now(),
+			Description:     "Transfer ke tabungan",
+			Notes:           "Tabungan bulan septemer",
+			Amount:          500000,
+		}
+
+		err := service.CreateTransfer(ctx, payload)
+		assert.Error(t, err)
+		assert.Equal(t, errorString, err.Error())
+
+		existingTrx := &transaction.Transaction{}
+		db.Last(&existingTrx)
+		assert.Empty(t, existingTrx)
+
+		existingDetail := &transaction.TransferDetail{}
+		db.Last(&existingDetail)
+		assert.Empty(t, existingDetail)
 	})
 }

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/storage"
-	"golang.org/x/exp/slices"
 )
 
 type TransactionType string
@@ -35,40 +34,19 @@ func (Transaction) TableName() string {
 	return "transactions"
 }
 
-type CreateBasicTransactionPayload struct {
-	UserId          int                         `json:"user_id"`
-	AccountId       int                         `json:"account_id"`
-	CategoryId      int                         `json:"category_id"`
-	TransactionDate time.Time                   `json:"transaction_date"`
-	Description     string                      `json:"description"`
-	Notes           string                      `json:"notes"`
-	Amount          float64                     `json:"amount"`
-	TransactionType TransactionType             `json:"transaction_type"`
-	Participants    []*CreateParticipantPayload `json:"participants"`
+type TransferDetail struct {
+	TransferDetailId int `gorm:"primaryKey;autoIncrement;column:transfer_detail_id" json:"transfer_detail_id"`
+	TransactionId    int `gorm:"column:transaction_id" json:"transaction_id"`
+	TargetAccountId  int `gorm:"column:target_account_id" json:"target_account_id"`
 }
 
-func (p *CreateBasicTransactionPayload) Validate() error {
-	if p.UserId == 0 {
-		return ErrInvalidUser
-	}
-	if p.AccountId == 0 {
-		return ErrInvalidAccount
-	}
-	if p.CategoryId == 0 {
-		return ErrInvalidCategory
-	}
-	if p.Amount < 0 {
-		return ErrInvalidAmount
-	}
-	if !slices.Contains(AvailableTransactionTypes, p.TransactionType) {
-		return ErrInvalidTransactionType
-	}
-
-	return nil
+func (TransferDetail) TableName() string {
+	return "transfer_details"
 }
 
 type TransactionRepository interface {
 	Create(ctx context.Context, payload *Transaction) error
+	CreateTransferDetail(ctx context.Context, payload *TransferDetail) error
 }
 
 type TransactionService struct {
@@ -109,6 +87,47 @@ func (s *TransactionService) CreateBasic(ctx context.Context, payload *CreateBas
 			if err != nil {
 				return err
 			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *TransactionService) CreateTransfer(ctx context.Context, payload *CreateTransferPayload) error {
+	err := payload.Validate()
+	if err != nil {
+		return err
+	}
+
+	trx := &Transaction{
+		UserId:          payload.UserId,
+		AccountId:       payload.SourceAccountId,
+		TransactionDate: payload.TransactionDate,
+		Description:     payload.Description,
+		Notes:           payload.Notes,
+		Amount:          payload.Amount,
+		TransactionType: string(TransferType),
+	}
+
+	err = s.manager.RunInTransaction(ctx, func(ctx context.Context) error {
+		err = s.repository.Create(ctx, trx)
+		if err != nil {
+			return err
+		}
+
+		transfer_detail := &TransferDetail{
+			TransactionId:   trx.TransactionId,
+			TargetAccountId: payload.TargetAccountId,
+		}
+
+		err = s.repository.CreateTransferDetail(ctx, transfer_detail)
+		if err != nil {
+			return err
 		}
 
 		return nil
