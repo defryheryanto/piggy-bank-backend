@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/defryheryanto/piggy-bank-backend/internal/storage"
 	"github.com/defryheryanto/piggy-bank-backend/internal/transaction"
 	trx_sql "github.com/defryheryanto/piggy-bank-backend/internal/transaction/sql"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ func setupParticipantService(db *gorm.DB) *transaction.ParticipantService {
 func setupTransactionService(db *gorm.DB) *transaction.TransactionService {
 	trxSQL := trx_sql.NewTransactionStorage(db)
 	participantService := setupParticipantService(db)
+	sqlManager := storage.NewSQLManager(db)
 
-	return transaction.NewTransactionService(trxSQL, participantService)
+	return transaction.NewTransactionService(trxSQL, participantService, sqlManager)
 }

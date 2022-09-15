@@ -1,8 +1,10 @@
 package transaction
 
 import (
+	"context"
 	"time"
 
+	"github.com/defryheryanto/piggy-bank-backend/internal/storage"
 	"golang.org/x/exp/slices"
 )
 
@@ -66,20 +68,21 @@ func (p *CreateBasicTransactionPayload) Validate() error {
 }
 
 type TransactionRepository interface {
-	Create(payload *Transaction) error
+	Create(ctx context.Context, payload *Transaction) error
 }
 
 type TransactionService struct {
 	repository         TransactionRepository
 	participantService *ParticipantService
+	manager            storage.Manager
 }
 
-func NewTransactionService(repo TransactionRepository, participantService *ParticipantService) *TransactionService {
-	return &TransactionService{repo, participantService}
+func NewTransactionService(repo TransactionRepository, participantService *ParticipantService, manager storage.Manager) *TransactionService {
+	return &TransactionService{repo, participantService, manager}
 }
 
 // Basic Transaction is transaction with type income or expense
-func (s *TransactionService) CreateBasic(payload *CreateBasicTransactionPayload) error {
+func (s *TransactionService) CreateBasic(ctx context.Context, payload *CreateBasicTransactionPayload) error {
 	err := payload.Validate()
 	if err != nil {
 		return err
@@ -95,16 +98,23 @@ func (s *TransactionService) CreateBasic(payload *CreateBasicTransactionPayload)
 		TransactionType: string(payload.TransactionType),
 	}
 
-	err = s.repository.Create(trx)
-	if err != nil {
-		return err
-	}
-
-	if len(payload.Participants) > 0 {
-		err = s.participantService.BulkCreate(trx.TransactionId, payload.Participants)
+	err = s.manager.RunInTransaction(ctx, func(ctx context.Context) error {
+		err = s.repository.Create(ctx, trx)
 		if err != nil {
 			return err
 		}
+
+		if len(payload.Participants) > 0 {
+			err = s.participantService.BulkCreate(ctx, trx.TransactionId, payload.Participants)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil

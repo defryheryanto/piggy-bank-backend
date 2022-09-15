@@ -1,5 +1,7 @@
 package transaction
 
+import "context"
+
 type Participant struct {
 	ParticipantId int     `gorm:"primaryKey;autoIncrement;column:participant_id" json:"participant_id"`
 	TransactionId int     `gorm:"column:transaction_id" json:"transaction_id"`
@@ -28,7 +30,7 @@ func (p *CreateParticipantPayload) Validate() error {
 }
 
 type ParticipantRepository interface {
-	BulkCreate(payloads []*Participant) error
+	BulkCreate(ctx context.Context, payloads []*Participant) error
 }
 
 type ParticipantService struct {
@@ -39,7 +41,7 @@ func NewParticipantService(repo ParticipantRepository) *ParticipantService {
 	return &ParticipantService{repo}
 }
 
-func (s *ParticipantService) BulkCreate(transactionId int, payloads []*CreateParticipantPayload) error {
+func (s *ParticipantService) BulkCreate(ctx context.Context, transactionId int, payloads []*CreateParticipantPayload) error {
 	participants := []*Participant{}
 
 	for _, payload := range payloads {
@@ -54,7 +56,7 @@ func (s *ParticipantService) BulkCreate(transactionId int, payloads []*CreatePar
 		})
 	}
 
-	err := s.repository.BulkCreate(participants)
+	err := s.repository.BulkCreate(ctx, participants)
 	if err != nil {
 		return err
 	}

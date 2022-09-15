@@ -36,7 +36,7 @@ func HandleCreateBasicTransaction(a *app.Application) http.HandlerFunc {
 		payload.UserId = session.UserID
 		payload.TransactionDate = time.Now()
 
-		err = a.TransactionService.CreateBasic(payload)
+		err = a.TransactionService.CreateBasic(r.Context(), payload)
 		if err != nil {
 			response.WithError(w, err)
 			return
