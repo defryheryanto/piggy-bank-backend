@@ -1,6 +1,7 @@
 package transaction_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/defryheryanto/piggy-bank-backend/internal/transaction"
@@ -18,6 +19,7 @@ func setupParticipantService(db *gorm.DB) *transaction.ParticipantService {
 
 func TestBulkCreate(t *testing.T) {
 	db := setupDatabase(t)
+	ctx := context.TODO()
 	test.RunTestWithDB(db, t, func(t *testing.T, db *gorm.DB) {
 		service := setupParticipantService(db)
 
@@ -33,7 +35,7 @@ func TestBulkCreate(t *testing.T) {
 				},
 			}
 
-			err := service.BulkCreate(1, payloads)
+			err := service.BulkCreate(ctx, 1, payloads)
 			assert.NoError(t, err)
 
 			existing := []*transaction.Participant{}
@@ -61,7 +63,7 @@ func TestBulkCreate(t *testing.T) {
 					Amount: 45000,
 				},
 			}
-			err := service.BulkCreate(1, payloads)
+			err := service.BulkCreate(ctx, 1, payloads)
 			assert.ErrorIs(t, err, transaction.ErrEmptyParticipantName)
 		})
 
@@ -76,7 +78,7 @@ func TestBulkCreate(t *testing.T) {
 					Amount: -1,
 				},
 			}
-			err := service.BulkCreate(1, payloads)
+			err := service.BulkCreate(ctx, 1, payloads)
 			assert.ErrorIs(t, err, transaction.ErrInvalidAmount)
 		})
 	})

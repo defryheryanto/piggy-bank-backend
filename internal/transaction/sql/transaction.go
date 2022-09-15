@@ -1,6 +1,9 @@
 package sql
 
 import (
+	"context"
+
+	"github.com/defryheryanto/piggy-bank-backend/internal/storage"
 	"github.com/defryheryanto/piggy-bank-backend/internal/transaction"
 	"gorm.io/gorm"
 )
@@ -13,11 +16,21 @@ func NewTransactionStorage(db *gorm.DB) *TransactionStorage {
 	return &TransactionStorage{db}
 }
 
-func (s *TransactionStorage) Create(payload *transaction.Transaction) error {
-	result := s.db.Create(&payload)
+func (s *TransactionStorage) Create(ctx context.Context, payload *transaction.Transaction) error {
+	db := s.getActiveDB(ctx)
+	result := db.Create(&payload)
 	if result.Error != nil {
 		return result.Error
 	}
 
 	return nil
+}
+
+func (s *TransactionStorage) getActiveDB(ctx context.Context) *gorm.DB {
+	db := storage.DatabaseFromContext(ctx)
+	if db == nil {
+		return s.db
+	}
+
+	return db
 }
