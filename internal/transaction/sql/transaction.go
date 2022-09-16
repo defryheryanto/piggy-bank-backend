@@ -36,6 +36,16 @@ func (s *TransactionStorage) CreateTransferDetail(ctx context.Context, payload *
 	return nil
 }
 
+func (s *TransactionStorage) CreateSavingDetail(ctx context.Context, payload *transaction.SavingDetail) error {
+	db := s.getActiveDB(ctx)
+	result := db.Create(&payload)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (s *TransactionStorage) getActiveDB(ctx context.Context) *gorm.DB {
 	db := storage.DatabaseFromContext(ctx)
 	if db == nil {

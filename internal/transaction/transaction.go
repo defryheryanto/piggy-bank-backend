@@ -44,9 +44,20 @@ func (TransferDetail) TableName() string {
 	return "transfer_details"
 }
 
+type SavingDetail struct {
+	SavingDetailId  int `gorm:"primaryKey;autoIncrement;column:saving_detail_id" json:"saving_detail_id"`
+	TransactionId   int `gorm:"column:transaction_id" json:"transaction_id"`
+	TargetAccountId int `gorm:"column:target_account_id" json:"target_account_id"`
+}
+
+func (SavingDetail) TableName() string {
+	return "saving_details"
+}
+
 type TransactionRepository interface {
 	Create(ctx context.Context, payload *Transaction) error
 	CreateTransferDetail(ctx context.Context, payload *TransferDetail) error
+	CreateSavingDetail(ctx context.Context, payload *SavingDetail) error
 }
 
 type TransactionService struct {
@@ -120,12 +131,53 @@ func (s *TransactionService) CreateTransfer(ctx context.Context, payload *Create
 			return err
 		}
 
-		transfer_detail := &TransferDetail{
+		transferDetail := &TransferDetail{
 			TransactionId:   trx.TransactionId,
 			TargetAccountId: payload.TargetAccountId,
 		}
 
-		err = s.repository.CreateTransferDetail(ctx, transfer_detail)
+		err = s.repository.CreateTransferDetail(ctx, transferDetail)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *TransactionService) CreateSaving(ctx context.Context, payload *CreateSavingPayload) error {
+	err := payload.Validate()
+	if err != nil {
+		return err
+	}
+
+	trx := &Transaction{
+		UserId:          payload.UserId,
+		AccountId:       payload.SourceAccountId,
+		TransactionDate: payload.TransactionDate,
+		Description:     payload.Description,
+		Notes:           payload.Notes,
+		Amount:          payload.Amount,
+		TransactionType: string(SavingsType),
+	}
+
+	err = s.manager.RunInTransaction(ctx, func(ctx context.Context) error {
+		err = s.repository.Create(ctx, trx)
+		if err != nil {
+			return err
+		}
+
+		savingDetail := &SavingDetail{
+			TransactionId:   trx.TransactionId,
+			TargetAccountId: payload.TargetAccountId,
+		}
+
+		err = s.repository.CreateSavingDetail(ctx, savingDetail)
 		if err != nil {
 			return err
 		}

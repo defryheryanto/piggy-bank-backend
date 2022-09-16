@@ -49,6 +49,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 
 	privateRoute.HandleFunc("/api/v1/transactions", trx_handler.HandleCreateBasicTransaction(s.application)).Methods(http.MethodPost)
 	privateRoute.HandleFunc("/api/v1/transactions/transfer", trx_handler.HandleCreateTransfer(s.application)).Methods(http.MethodPost)
+	privateRoute.HandleFunc("/api/v1/transactions/saving", trx_handler.HandleCreateSavingTransaction(s.application)).Methods(http.MethodPost)
 
 	return r
 }

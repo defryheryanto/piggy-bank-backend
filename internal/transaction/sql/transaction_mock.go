@@ -7,18 +7,23 @@ import (
 )
 
 type TransactionMockStorage struct {
-	create               MockFunction
-	createTransferDetail MockFunction
+	createFunc               MockFunction
+	createTransferDetailFunc MockFunction
+	createSavingDetailFunc   MockFunction
 }
 
-func NewTransactionMockStorage(create, createTransferDetail MockFunction) *TransactionMockStorage {
-	return &TransactionMockStorage{create, createTransferDetail}
+func NewTransactionMockStorage(create, createTransferDetail, createSavingDetail MockFunction) *TransactionMockStorage {
+	return &TransactionMockStorage{create, createTransferDetail, createSavingDetail}
 }
 
 func (s *TransactionMockStorage) Create(ctx context.Context, payload *transaction.Transaction) error {
-	return s.create()
+	return s.createFunc()
 }
 
 func (s *TransactionMockStorage) CreateTransferDetail(ctx context.Context, payload *transaction.TransferDetail) error {
-	return s.createTransferDetail()
+	return s.createTransferDetailFunc()
+}
+
+func (s *TransactionMockStorage) CreateSavingDetail(ctx context.Context, payload *transaction.SavingDetail) error {
+	return s.createSavingDetailFunc()
 }

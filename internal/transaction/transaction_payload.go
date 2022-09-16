@@ -67,3 +67,33 @@ func (p *CreateTransferPayload) Validate() error {
 
 	return nil
 }
+
+type CreateSavingPayload struct {
+	UserId          int       `json:"user_id"`
+	SourceAccountId int       `json:"source_account_id"`
+	TargetAccountId int       `json:"target_account_id"`
+	TransactionDate time.Time `json:"transaction_date"`
+	Description     string    `json:"description"`
+	Notes           string    `json:"notes"`
+	Amount          float64   `json:"amount"`
+}
+
+func (p *CreateSavingPayload) Validate() error {
+	if p.UserId == 0 {
+		return ErrInvalidUser
+	}
+	if p.SourceAccountId == 0 {
+		return ErrInvalidSourceAccount
+	}
+	if p.TargetAccountId == 0 {
+		return ErrInvalidTargetAccount
+	}
+	if p.TransactionDate.IsZero() {
+		return ErrInvalidTransactionDate
+	}
+	if p.Amount < 0 {
+		return ErrInvalidAmount
+	}
+
+	return nil
+}
