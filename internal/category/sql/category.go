@@ -1,6 +1,8 @@
 package sql
 
 import (
+	"strings"
+
 	"github.com/defryheryanto/piggy-bank-backend/internal/category"
 	"gorm.io/gorm"
 )
@@ -63,4 +65,27 @@ func (s *CategoryStorage) DeleteById(categoryId int) error {
 	}
 
 	return nil
+}
+
+func (s *CategoryStorage) GetByFilter(filter *category.CategoryFilter) []*category.Category {
+	result := []*category.Category{}
+	if filter == nil {
+		s.db.Find(&result)
+		return result
+	}
+
+	whereQueries := []string{}
+	values := []interface{}{}
+
+	if filter.CategoryType != "" {
+		whereQueries = append(whereQueries, "category_type = ?")
+		values = append(values, string(filter.CategoryType))
+	}
+	if filter.UserId != 0 {
+		whereQueries = append(whereQueries, "user_id = ?")
+		values = append(values, filter.UserId)
+	}
+
+	s.db.Where(strings.Join(whereQueries, " AND "), values...).Find(&result)
+	return result
 }

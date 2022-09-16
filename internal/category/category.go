@@ -63,12 +63,18 @@ func (p *UpdateCategoryPayload) Validate() error {
 	return nil
 }
 
+type CategoryFilter struct {
+	CategoryType CategoryType `json:"category_type"`
+	UserId       int          `json:"user_id"`
+}
+
 type CategoryRepository interface {
 	Create(*Category) error
 	GetByTypeAndUserId(categoryType CategoryType, userId int) []*Category
 	GetById(categoryId int) *Category
 	UpdateById(categoryId int, payload *Category) error
 	DeleteById(categoryId int) error
+	GetByFilter(filter *CategoryFilter) []*Category
 }
 
 type CategoryService struct {
@@ -176,6 +182,10 @@ func (s *CategoryService) UpdateBudget(categoryId int, budget int64) error {
 	}
 
 	return nil
+}
+
+func (s *CategoryService) GetList(filter *CategoryFilter) []*Category {
+	return s.repository.GetByFilter(filter)
 }
 
 func ValidateCategoryType(categoryType CategoryType) error {

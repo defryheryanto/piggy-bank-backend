@@ -339,3 +339,50 @@ func TestUpdateBudget(t *testing.T) {
 		})
 	})
 }
+
+func TestGetList(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	service := setupService(db)
+	tables := []string{
+		category.Category{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, tables, func() {
+		expenseCategories := []*category.Category{
+			{
+				CategoryName: "Food",
+				CategoryType: category.ExpenseCategory,
+				UserId:       1,
+				Budget:       500000,
+			},
+			{
+				CategoryName: "Other",
+				CategoryType: category.ExpenseCategory,
+				UserId:       1,
+				Budget:       2000000,
+			},
+			{
+				CategoryName: "Insurance",
+				CategoryType: category.ExpenseCategory,
+				UserId:       2,
+				Budget:       800000,
+			},
+		}
+		db.Create(&expenseCategories)
+
+		incomeCategories := []*category.Category{
+			{
+				CategoryName: "Salary",
+				CategoryType: category.IncomeCategory,
+				UserId:       1,
+			},
+		}
+		db.Create(&incomeCategories)
+
+		results := service.GetList(&category.CategoryFilter{
+			UserId:       1,
+			CategoryType: category.ExpenseCategory,
+		})
+		assert.Equal(t, 2, len(results))
+	})
+}

@@ -192,3 +192,23 @@ func HandleUpdateDefaultBudget(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleGetCategories(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		categoryType := r.URL.Query().Get("categoryType")
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, auth.ErrInvalidCredential)
+			return
+		}
+
+		filter := &category.CategoryFilter{
+			CategoryType: category.CategoryType(categoryType),
+			UserId:       session.UserID,
+		}
+
+		categories := a.CategoryService.GetList(filter)
+		response.WithJSON(w, http.StatusOK, categories)
+	}
+}
