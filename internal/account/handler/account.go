@@ -136,3 +136,39 @@ func HandleDeleteAccount(a *app.Application) http.HandlerFunc {
 		response.WithJSON(w, http.StatusOK, response.NewSuccessResponse())
 	}
 }
+
+func HandleSearchAccounts(a *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sAccountTypeId := r.URL.Query().Get("accountTypeId")
+		sExcludedAccountTypeID := r.URL.Query().Get("excludeAccountTypeId")
+
+		session := auth.FromContext(r.Context())
+		if session == nil {
+			response.WithError(w, errors.ErrInvalidSession)
+			return
+		}
+		filter := &account.AccountFilter{
+			UserID: session.UserID,
+		}
+
+		var err error
+		if sAccountTypeId != "" {
+			filter.AccountTypeId, err = strconv.Atoi(sAccountTypeId)
+			if err != nil {
+				response.WithError(w, err)
+				return
+			}
+		}
+
+		if sExcludedAccountTypeID != "" {
+			filter.ExcludedAccountTypeId, err = strconv.Atoi(sExcludedAccountTypeID)
+			if err != nil {
+				response.WithError(w, err)
+				return
+			}
+		}
+
+		results := a.AccountService.GetList(filter)
+		response.WithJSON(w, http.StatusOK, results)
+	}
+}

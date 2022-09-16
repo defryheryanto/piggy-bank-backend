@@ -293,3 +293,101 @@ func TestDeleteAccount(t *testing.T) {
 		})
 	})
 }
+
+func TestGetList_FilterByUserId(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	service := setupAccountService(db)
+
+	tables := []string{
+		account.Account{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, tables, func() {
+		init := []*account.Account{
+			{
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			},
+			{
+				AccountName:   "BCA",
+				AccountTypeID: 2,
+				UserID:        2,
+			},
+		}
+
+		db.Create(&init)
+
+		results := service.GetList(&account.AccountFilter{
+			UserID: 1,
+		})
+		assert.Equal(t, 1, len(results))
+	})
+}
+
+func TestGetList_FilterByAccountTypeId(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	service := setupAccountService(db)
+
+	tables := []string{
+		account.Account{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, tables, func() {
+		init := []*account.Account{
+			{
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			},
+			{
+				AccountName:   "Blu",
+				AccountTypeID: 2,
+				UserID:        1,
+			},
+		}
+
+		db.Create(&init)
+
+		results := service.GetList(&account.AccountFilter{
+			AccountTypeId: 1,
+		})
+		assert.Equal(t, 1, len(results))
+	})
+}
+
+func TestGetList_FilterByExcludedAccountTypeId(t *testing.T) {
+	db := test.SetupTestDatabase(t, "../../.env", "../../db/migrations")
+	service := setupAccountService(db)
+
+	tables := []string{
+		account.Account{}.TableName(),
+	}
+
+	test.TruncateAfterTest(t, db, tables, func() {
+		init := []*account.Account{
+			{
+				AccountName:   "BCA",
+				AccountTypeID: 1,
+				UserID:        1,
+			},
+			{
+				AccountName:   "Blu",
+				AccountTypeID: 2,
+				UserID:        1,
+			},
+			{
+				AccountName:   "Blu",
+				AccountTypeID: 1,
+				UserID:        1,
+			},
+		}
+
+		db.Create(&init)
+
+		results := service.GetList(&account.AccountFilter{
+			ExcludedAccountTypeId: 2,
+		})
+		assert.Equal(t, 2, len(results))
+	})
+}

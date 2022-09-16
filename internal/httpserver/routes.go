@@ -28,6 +28,7 @@ func (s *ApplicationServer) CompileRoutes() *mux.Router {
 	privateRoute := r.NewRoute().Subrouter()
 	privateRoute.Use(middleware.PrivateRoute(s.application))
 	privateRoute.HandleFunc("/api/v1/accounts", account_handler.HandleGetAccounts(s.application)).Methods(http.MethodGet)
+	privateRoute.HandleFunc("/api/v1/accounts/search", account_handler.HandleSearchAccounts(s.application)).Methods(http.MethodGet)
 	privateRoute.HandleFunc("/api/v1/accounts", account_handler.HandleCreateAccount(s.application)).Methods(http.MethodPost)
 	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", account_handler.HandleUpdateAccount(s.application)).Methods(http.MethodPatch)
 	privateRoute.HandleFunc("/api/v1/accounts/{account_id}", account_handler.HandleDeleteAccount(s.application)).Methods(http.MethodDelete)

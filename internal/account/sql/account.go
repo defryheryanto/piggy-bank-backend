@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"strings"
+
 	"github.com/defryheryanto/piggy-bank-backend/internal/account"
 	"gorm.io/gorm"
 )
@@ -69,4 +71,31 @@ func (s *AccountStorage) DeleteById(accountId int) error {
 	}
 
 	return nil
+}
+
+func (s *AccountStorage) GetByFilter(filter *account.AccountFilter) []*account.Account {
+	result := []*account.Account{}
+	if filter == nil {
+		s.db.Find(&result)
+		return result
+	}
+
+	whereQueries := []string{}
+	values := []interface{}{}
+	if filter.UserID != 0 {
+		whereQueries = append(whereQueries, "user_id = ?")
+		values = append(values, filter.UserID)
+	}
+	if filter.AccountTypeId != 0 {
+		whereQueries = append(whereQueries, "account_type_id = ?")
+		values = append(values, filter.AccountTypeId)
+	}
+	if filter.ExcludedAccountTypeId != 0 {
+		whereQueries = append(whereQueries, "account_type_id != ?")
+		values = append(values, filter.ExcludedAccountTypeId)
+	}
+
+	s.db.Where(strings.Join(whereQueries, " AND "), values...).Find(&result)
+
+	return result
 }

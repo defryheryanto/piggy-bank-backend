@@ -37,6 +37,12 @@ type UpdateAccountPayload struct {
 	UserID        int    `json:"user_id"`
 }
 
+type AccountFilter struct {
+	UserID                int `json:"user_id"`
+	AccountTypeId         int `json:"account_type_id"`
+	ExcludedAccountTypeId int `json:"excluded_account_type_id"`
+}
+
 type AccountRepository interface {
 	GetTypes() []*AccountType
 	GetTypeById(int) *AccountType
@@ -45,6 +51,7 @@ type AccountRepository interface {
 	Update(id int, payload *Account) error
 	GetByIdAndUser(accountId, userId int) *Account
 	DeleteById(accountId int) error
+	GetByFilter(filter *AccountFilter) []*Account
 }
 
 type AccountService struct {
@@ -125,4 +132,8 @@ func (s *AccountService) DeleteById(accountId int, userId int) error {
 	}
 
 	return nil
+}
+
+func (s *AccountService) GetList(filter *AccountFilter) []*Account {
+	return s.accountStorage.GetByFilter(filter)
 }
